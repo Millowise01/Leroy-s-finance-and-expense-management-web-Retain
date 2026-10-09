@@ -1,10 +1,6 @@
-import { prisma } from "../config/prisma";
+import { prisma } from '../config/prisma.js';
 
-export async function getDashboard(
-  userId: string,
-  month: number,
-  year: number
-) {
+export async function getDashboard(userId: string, month: number, year: number) {
   const start = new Date(year, month - 1, 1);
   const end = new Date(year, month, 1);
 
@@ -14,39 +10,33 @@ export async function getDashboard(
         userId,
         expenseDate: {
           gte: start,
-          lt: end
-        }
+          lt: end,
+        },
       },
       include: {
-        category: true
+        category: true,
       },
       orderBy: {
-        expenseDate: "desc"
-      }
+        expenseDate: 'desc',
+      },
     }),
     prisma.budget.findUnique({
       where: {
         userId_month_year: {
           userId,
           month,
-          year
-        }
-      }
-    })
+          year,
+        },
+      },
+    }),
   ]);
 
-  const totalSpent = expenses.reduce(
-    (sum, expense) => sum + Number(expense.amount),
-    0
-  );
+  const totalSpent = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
 
   const highestExpense = expenses.reduce(
     (highest, expense) =>
-      !highest ||
-      Number(expense.amount) > Number(highest.amount)
-        ? expense
-        : highest,
-    null as (typeof expenses)[number] | null
+      !highest || Number(expense.amount) > Number(highest.amount) ? expense : highest,
+    null as (typeof expenses)[number] | null,
   );
 
   const categoryMap = new Map<
@@ -67,28 +57,18 @@ export async function getDashboard(
       categoryMap.set(expense.categoryId, {
         categoryId: expense.categoryId,
         categoryName: expense.category.name,
-        amount: Number(expense.amount)
+        amount: Number(expense.amount),
       });
     }
   }
 
-  const spendingByCategory = Array.from(
-    categoryMap.values()
-  ).sort((a, b) => b.amount - a.amount);
+  const spendingByCategory = Array.from(categoryMap.values()).sort((a, b) => b.amount - a.amount);
 
   const budgetAmount = Number(budget?.amount ?? 0);
   const remaining = budgetAmount - totalSpent;
-  const percentage =
-    budgetAmount > 0
-      ? (totalSpent / budgetAmount) * 100
-      : 0;
+  const percentage = budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0;
 
-  const status =
-    percentage >= 100
-      ? "OVER"
-      : percentage >= 70
-        ? "APPROACHING"
-        : "WITHIN";
+  const status = percentage >= 100 ? 'OVER' : percentage >= 70 ? 'APPROACHING' : 'WITHIN';
 
   return {
     month,
@@ -101,15 +81,13 @@ export async function getDashboard(
     highestExpense: highestExpense
       ? {
           ...highestExpense,
-          amount: Number(highestExpense.amount)
+          amount: Number(highestExpense.amount),
         }
       : null,
     spendingByCategory,
-    recentExpenses: expenses
-      .slice(0, 5)
-      .map((expense) => ({
-        ...expense,
-        amount: Number(expense.amount)
-      }))
+    recentExpenses: expenses.slice(0, 5).map((expense) => ({
+      ...expense,
+      amount: Number(expense.amount),
+    })),
   };
 }

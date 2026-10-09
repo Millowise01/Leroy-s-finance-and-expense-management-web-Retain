@@ -1,14 +1,14 @@
-import jwt from "jsonwebtoken";
-import { env } from "../config/env";
+import jwt from 'jsonwebtoken';
+import { env } from '../config/env.js';
 
 export type AuthTokenPayload = {
   userId: string;
-  role: "USER" | "ADMIN";
+  role: 'USER' | 'ADMIN';
 };
 
 export function signToken(payload: AuthTokenPayload): string {
   return jwt.sign(payload, env.JWT_SECRET, {
-    expiresIn: "7d"
+    expiresIn: '7d',
   });
 }
 
@@ -16,16 +16,16 @@ export function verifyToken(token: string): AuthTokenPayload {
   const payload = jwt.verify(token, env.JWT_SECRET);
 
   if (
-    typeof payload !== "object" ||
+    typeof payload !== 'object' ||
     payload === null ||
-    typeof payload.userId !== "string" ||
-    (payload.role !== "USER" && payload.role !== "ADMIN")
+    typeof payload.userId !== 'string' ||
+    (payload.role !== 'USER' && payload.role !== 'ADMIN')
   ) {
-    throw new Error("Invalid authentication token");
+    throw new Error('Invalid authentication token');
   }
 
   return {
     userId: payload.userId,
-    role: payload.role
+    role: payload.role,
   };
 }

@@ -7,16 +7,16 @@ interface SessionResponse {
 
 export const authService = {
   async restoreSession(): Promise<AuthUser> {
-    const response = await api.get<SessionResponse>('/auth/session');
+    const response = await api.get<SessionResponse>('/auth/me');
     return response.data.user;
   },
 
   async signIn(input: SignInInput): Promise<AuthUser> {
-    const response = await api.post<SessionResponse>('/auth/sign-in', input);
+    const response = await api.post<SessionResponse>('/auth/signin', input);
     return response.data.user;
   },
 
   async signOut(): Promise<void> {
-    await api.post('/auth/sign-out');
+    await api.post('/auth/signout');
   },
 };

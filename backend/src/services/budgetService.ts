@@ -1,18 +1,14 @@
-import { prisma } from "../config/prisma";
+import { prisma } from '../config/prisma.js';
 
-export async function getBudget(
-  userId: string,
-  month: number,
-  year: number
-) {
+export async function getBudget(userId: string, month: number, year: number) {
   const budget = await prisma.budget.findUnique({
     where: {
       userId_month_year: {
         userId,
         month,
-        year
-      }
-    }
+        year,
+      },
+    },
   });
 
   const start = new Date(year, month - 1, 1);
@@ -23,74 +19,66 @@ export async function getBudget(
       userId,
       expenseDate: {
         gte: start,
-        lt: end
-      }
+        lt: end,
+      },
     },
     _sum: {
-      amount: true
-    }
+      amount: true,
+    },
   });
 
   const spent = Number(aggregate._sum.amount ?? 0);
   const budgetAmount = Number(budget?.amount ?? 0);
   const remaining = budgetAmount - spent;
 
-  const percentage =
-    budgetAmount > 0
-      ? (spent / budgetAmount) * 100
-      : 0;
+  const percentage = budgetAmount > 0 ? (spent / budgetAmount) * 100 : 0;
 
-  let status: "WITHIN" | "APPROACHING" | "OVER";
+  let status: 'WITHIN' | 'APPROACHING' | 'OVER';
 
   if (percentage >= 100) {
-    status = "OVER";
+    status = 'OVER';
   } else if (percentage >= 70) {
-    status = "APPROACHING";
+    status = 'APPROACHING';
   } else {
-    status = "WITHIN";
+    status = 'WITHIN';
   }
 
   return {
     budget: budget
       ? {
           ...budget,
-          amount: Number(budget.amount)
+          amount: Number(budget.amount),
         }
       : null,
     spent,
     remaining,
     percentage,
-    status
+    status,
   };
 }
 
-export async function upsertBudget(
-  userId: string,
-  amount: string,
-  month: number,
-  year: number
-) {
+export async function upsertBudget(userId: string, amount: string, month: number, year: number) {
   const budget = await prisma.budget.upsert({
     where: {
       userId_month_year: {
         userId,
         month,
-        year
-      }
+        year,
+      },
     },
     update: {
-      amount
+      amount,
     },
     create: {
       userId,
       amount,
       month,
-      year
-    }
+      year,
+    },
   });
 
   return {
     ...budget,
-    amount: Number(budget.amount)
+    amount: Number(budget.amount),
   };
 }

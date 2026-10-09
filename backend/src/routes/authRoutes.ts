@@ -1,17 +1,17 @@
-import { Router } from "express";
+import { Router } from 'express';
 import {
   meController,
   signinController,
   signoutController,
-  signupController
-} from "../controllers/authController";
-import { requireAuth } from "../middleware/authMiddleware";
+  signupController,
+} from '../controllers/authController.js';
+import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-router.post("/signup", signupController);
-router.post("/signin", signinController);
-router.post("/signout", signoutController);
-router.get("/me", requireAuth, meController);
+router.post('/signup', signupController);
+router.post('/signin', signinController);
+router.post('/signout', signoutController);
+router.get('/me', requireAuth, meController);
 
 export default router;

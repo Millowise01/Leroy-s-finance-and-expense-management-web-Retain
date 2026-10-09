@@ -1,17 +1,9 @@
-import { prisma } from "../config/prisma";
+import { prisma } from '../config/prisma.js';
 
 export async function getAdminInsights() {
   const now = new Date();
-  const monthStart = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    1
-  );
-  const monthEnd = new Date(
-    now.getFullYear(),
-    now.getMonth() + 1,
-    1
-  );
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
   const [
     totalUsers,
@@ -20,7 +12,7 @@ export async function getAdminInsights() {
     currentMonthExpenses,
     categorySpending,
     recentExpenses,
-    recentUsers
+    recentUsers,
   ] = await Promise.all([
     prisma.user.count(),
 
@@ -28,38 +20,38 @@ export async function getAdminInsights() {
 
     prisma.expense.aggregate({
       _sum: {
-        amount: true
-      }
+        amount: true,
+      },
     }),
 
     prisma.expense.count({
       where: {
         expenseDate: {
           gte: monthStart,
-          lt: monthEnd
-        }
-      }
+          lt: monthEnd,
+        },
+      },
     }),
 
     prisma.category.findMany({
       include: {
         _count: {
           select: {
-            expenses: true
-          }
+            expenses: true,
+          },
         },
         expenses: {
           select: {
-            amount: true
-          }
-        }
-      }
+            amount: true,
+          },
+        },
+      },
     }),
 
     prisma.expense.findMany({
       take: 10,
       orderBy: {
-        createdAt: "desc"
+        createdAt: 'desc',
       },
       include: {
         category: true,
@@ -67,25 +59,25 @@ export async function getAdminInsights() {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     }),
 
     prisma.user.findMany({
       take: 10,
       orderBy: {
-        createdAt: "desc"
+        createdAt: 'desc',
       },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        createdAt: true
-      }
-    })
+        createdAt: true,
+      },
+    }),
   ]);
 
   const normalizedCategories = categorySpending
@@ -93,19 +85,14 @@ export async function getAdminInsights() {
       id: category.id,
       name: category.name,
       expenseCount: category._count.expenses,
-      totalSpent: category.expenses.reduce(
-        (sum, expense) => sum + Number(expense.amount),
-        0
-      )
+      totalSpent: category.expenses.reduce((sum, expense) => sum + Number(expense.amount), 0),
     }))
     .sort((a, b) => b.expenseCount - a.expenseCount);
 
   return {
     totalUsers,
     totalExpenses,
-    totalExpenseValue: Number(
-      totalExpenseValue._sum.amount ?? 0
-    ),
+    totalExpenseValue: Number(totalExpenseValue._sum.amount ?? 0),
     currentMonthExpenses,
     spendingPerCategory: normalizedCategories,
     topCategories: normalizedCategories.slice(0, 5),
@@ -114,8 +101,8 @@ export async function getAdminInsights() {
       .slice(0, 5),
     recentExpenses: recentExpenses.map((expense) => ({
       ...expense,
-      amount: Number(expense.amount)
+      amount: Number(expense.amount),
     })),
-    recentUsers
+    recentUsers,
   };
 }

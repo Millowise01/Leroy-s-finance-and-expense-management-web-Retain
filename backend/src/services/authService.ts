@@ -1,20 +1,16 @@
-import { prisma } from "../config/prisma";
-import { comparePassword, hashPassword } from "../utils/password";
-import { signToken } from "../utils/jwt";
+import { prisma } from '../config/prisma.js';
+import { comparePassword, hashPassword } from '../utils/password.js';
+import { signToken } from '../utils/jwt.js';
 
-export async function signup(
-  name: string,
-  email: string,
-  password: string
-) {
+export async function signup(name: string, email: string, password: string) {
   const normalizedEmail = email.trim().toLowerCase();
 
   const existingUser = await prisma.user.findUnique({
-    where: { email: normalizedEmail }
+    where: { email: normalizedEmail },
   });
 
   if (existingUser) {
-    throw new Error("An account with this email already exists");
+    throw new Error('An account with this email already exists');
   }
 
   const passwordHash = await hashPassword(password);
@@ -23,50 +19,44 @@ export async function signup(
     data: {
       name: name.trim(),
       email: normalizedEmail,
-      password: passwordHash
+      password: passwordHash,
     },
     select: {
       id: true,
       name: true,
       email: true,
-      role: true
-    }
+      role: true,
+    },
   });
 
   const token = signToken({
     userId: user.id,
-    role: user.role
+    role: user.role,
   });
 
   return { user, token };
 }
 
-export async function signin(
-  email: string,
-  password: string
-) {
+export async function signin(email: string, password: string) {
   const normalizedEmail = email.trim().toLowerCase();
 
   const user = await prisma.user.findUnique({
-    where: { email: normalizedEmail }
+    where: { email: normalizedEmail },
   });
 
   if (!user) {
-    throw new Error("Invalid email or password");
+    throw new Error('Invalid email or password');
   }
 
-  const passwordMatches = await comparePassword(
-    password,
-    user.password
-  );
+  const passwordMatches = await comparePassword(password, user.password);
 
   if (!passwordMatches) {
-    throw new Error("Invalid email or password");
+    throw new Error('Invalid email or password');
   }
 
   const token = signToken({
     userId: user.id,
-    role: user.role
+    role: user.role,
   });
 
   return {
@@ -74,9 +64,9 @@ export async function signin(
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
     },
-    token
+    token,
   };
 }
 
@@ -88,7 +78,7 @@ export async function getCurrentUser(userId: string) {
       name: true,
       email: true,
       role: true,
-      createdAt: true
-    }
+      createdAt: true,
+    },
   });
 }

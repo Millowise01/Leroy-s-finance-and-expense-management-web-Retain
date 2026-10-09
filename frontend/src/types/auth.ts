@@ -1,11 +1,11 @@
-export type UserRole = 'user' | 'admin';
+export type UserRole = 'USER' | 'ADMIN';
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
 export interface AuthUser {
   id: string;
   email: string;
-  displayName: string;
+  name: string;
   role: UserRole;
 }
 

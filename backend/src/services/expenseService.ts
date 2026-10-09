@@ -1,19 +1,26 @@
-import { prisma } from "../config/prisma";
+import { prisma } from '../config/prisma.js';
+import { PaymentMethod } from '../../generated/prisma/client.js';
 
 type ExpenseFilters = {
   userId: string;
   search?: string;
   categoryId?: string;
-  paymentMethod?: string;
+  paymentMethod?: PaymentMethod;
   startDate?: Date;
   endDate?: Date;
   minAmount?: number;
   maxAmount?: number;
-  sortBy?: "date" | "amount";
-  sortOrder?: "asc" | "desc";
+  sortBy?: 'date' | 'amount';
+  sortOrder?: 'asc' | 'desc';
   page: number;
   limit: number;
 };
+
+const paymentMethodValues = Object.values(PaymentMethod);
+
+export function isPaymentMethod(value: string): value is PaymentMethod {
+  return paymentMethodValues.includes(value as PaymentMethod);
+}
 
 export async function listExpenses(filters: ExpenseFilters) {
   const where = {
@@ -24,106 +31,90 @@ export async function listExpenses(filters: ExpenseFilters) {
             {
               title: {
                 contains: filters.search,
-                mode: "insensitive" as const
-              }
+                mode: 'insensitive' as const,
+              },
             },
             {
               description: {
                 contains: filters.search,
-                mode: "insensitive" as const
-              }
-            }
-          ]
+                mode: 'insensitive' as const,
+              },
+            },
+          ],
         }
       : {}),
-    ...(filters.categoryId
-      ? { categoryId: filters.categoryId }
-      : {}),
-    ...(filters.paymentMethod
-      ? { paymentMethod: filters.paymentMethod as any }
-      : {}),
+    ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
+    ...(filters.paymentMethod ? { paymentMethod: filters.paymentMethod } : {}),
     ...(filters.startDate || filters.endDate
       ? {
           expenseDate: {
-            ...(filters.startDate
-              ? { gte: filters.startDate }
-              : {}),
-            ...(filters.endDate
-              ? { lte: filters.endDate }
-              : {})
-          }
+            ...(filters.startDate ? { gte: filters.startDate } : {}),
+            ...(filters.endDate ? { lte: filters.endDate } : {}),
+          },
         }
       : {}),
-    ...(filters.minAmount !== undefined ||
-    filters.maxAmount !== undefined
+    ...(filters.minAmount !== undefined || filters.maxAmount !== undefined
       ? {
           amount: {
-            ...(filters.minAmount !== undefined
-              ? { gte: filters.minAmount }
-              : {}),
-            ...(filters.maxAmount !== undefined
-              ? { lte: filters.maxAmount }
-              : {})
-          }
+            ...(filters.minAmount !== undefined ? { gte: filters.minAmount } : {}),
+            ...(filters.maxAmount !== undefined ? { lte: filters.maxAmount } : {}),
+          },
         }
-      : {})
+      : {}),
   };
 
   const skip = (filters.page - 1) * filters.limit;
 
   const orderBy =
-    filters.sortBy === "amount"
-      ? { amount: filters.sortOrder ?? "desc" }
-      : { expenseDate: filters.sortOrder ?? "desc" };
+    filters.sortBy === 'amount'
+      ? { amount: filters.sortOrder ?? 'desc' }
+      : { expenseDate: filters.sortOrder ?? 'desc' };
 
   const [expenses, total] = await Promise.all([
     prisma.expense.findMany({
       where,
       include: {
-        category: true
+        category: true,
       },
       orderBy,
       skip,
-      take: filters.limit
+      take: filters.limit,
     }),
-    prisma.expense.count({ where })
+    prisma.expense.count({ where }),
   ]);
 
   return {
     expenses: expenses.map((expense) => ({
       ...expense,
-      amount: Number(expense.amount)
+      amount: Number(expense.amount),
     })),
     pagination: {
       page: filters.page,
       limit: filters.limit,
       total,
-      totalPages: Math.ceil(total / filters.limit)
-    }
+      totalPages: Math.ceil(total / filters.limit),
+    },
   };
 }
 
-export async function getExpense(
-  id: string,
-  userId: string
-) {
+export async function getExpense(id: string, userId: string) {
   const expense = await prisma.expense.findFirst({
     where: {
       id,
-      userId
+      userId,
     },
     include: {
-      category: true
-    }
+      category: true,
+    },
   });
 
   if (!expense) {
-    throw new Error("Expense not found");
+    throw new Error('Expense not found');
   }
 
   return {
     ...expense,
-    amount: Number(expense.amount)
+    amount: Number(expense.amount),
   };
 }
 
@@ -133,24 +124,18 @@ export async function createExpense(data: {
   description?: string;
   amount: string;
   categoryId: string;
-  paymentMethod:
-    | "CASH"
-    | "MOBILE_MONEY"
-    | "DEBIT_CARD"
-    | "CREDIT_CARD"
-    | "BANK_TRANSFER"
-    | "OTHER";
+  paymentMethod: 'CASH' | 'MOBILE_MONEY' | 'DEBIT_CARD' | 'CREDIT_CARD' | 'BANK_TRANSFER' | 'OTHER';
   expenseDate: Date;
   notes?: string;
 }) {
   const category = await prisma.category.findUnique({
     where: {
-      id: data.categoryId
-    }
+      id: data.categoryId,
+    },
   });
 
   if (!category) {
-    throw new Error("Category not found");
+    throw new Error('Category not found');
   }
 
   const expense = await prisma.expense.create({
@@ -162,16 +147,16 @@ export async function createExpense(data: {
       categoryId: data.categoryId,
       paymentMethod: data.paymentMethod,
       expenseDate: data.expenseDate,
-      notes: data.notes?.trim() || null
+      notes: data.notes?.trim() || null,
     },
     include: {
-      category: true
-    }
+      category: true,
+    },
   });
 
   return {
     ...expense,
-    amount: Number(expense.amount)
+    amount: Number(expense.amount),
   };
 }
 
@@ -184,22 +169,17 @@ export async function updateExpense(
     amount: string;
     categoryId: string;
     paymentMethod:
-      | "CASH"
-      | "MOBILE_MONEY"
-      | "DEBIT_CARD"
-      | "CREDIT_CARD"
-      | "BANK_TRANSFER"
-      | "OTHER";
+      'CASH' | 'MOBILE_MONEY' | 'DEBIT_CARD' | 'CREDIT_CARD' | 'BANK_TRANSFER' | 'OTHER';
     expenseDate: Date;
     notes?: string;
-  }
+  },
 ) {
   const existing = await prisma.expense.findFirst({
-    where: { id, userId }
+    where: { id, userId },
   });
 
   if (!existing) {
-    throw new Error("Expense not found");
+    throw new Error('Expense not found');
   }
 
   const expense = await prisma.expense.update({
@@ -211,32 +191,29 @@ export async function updateExpense(
       categoryId: data.categoryId,
       paymentMethod: data.paymentMethod,
       expenseDate: data.expenseDate,
-      notes: data.notes?.trim() || null
+      notes: data.notes?.trim() || null,
     },
     include: {
-      category: true
-    }
+      category: true,
+    },
   });
 
   return {
     ...expense,
-    amount: Number(expense.amount)
+    amount: Number(expense.amount),
   };
 }
 
-export async function deleteExpense(
-  id: string,
-  userId: string
-) {
+export async function deleteExpense(id: string, userId: string) {
   const existing = await prisma.expense.findFirst({
-    where: { id, userId }
+    where: { id, userId },
   });
 
   if (!existing) {
-    throw new Error("Expense not found");
+    throw new Error('Expense not found');
   }
 
   await prisma.expense.delete({
-    where: { id }
+    where: { id },
   });
 }
