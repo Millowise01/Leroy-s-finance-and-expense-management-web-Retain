@@ -32,9 +32,9 @@ npm run dev:backend
 ```
 
 The frontend foundation is available at `http://localhost:5173` and uses
-`frontend/.env.example` as its environment template. The backend foundation is
-still pending and will document its API port and environment values when it is
-established.
+`frontend/.env.example` as its environment template. The backend runs at
+`http://localhost:4000` and uses `backend/.env.example` as its environment
+template. Its health endpoint is `GET /api/health`.
 
 Run repository checks:
 
