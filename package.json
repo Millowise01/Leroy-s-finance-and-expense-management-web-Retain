@@ -21,5 +21,13 @@
   },
   "devDependencies": {
     "prettier": "^3.9.9"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.5.0",
+    "@mui/material": "^9.5.0",
+    "@reduxjs/toolkit": "^2.13.0",
+    "react-redux": "^9.3.0"
   }
 }
