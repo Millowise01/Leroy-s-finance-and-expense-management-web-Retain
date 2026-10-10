@@ -376,7 +376,7 @@ export default function ExpensesPage() {
           {result && result.pagination.totalPages > 1 && (
             <Stack sx={{ alignItems: "center", mt: 3 }}>
               <Pagination
-                page={filters.page - 1}
+                page={filters.page}
                 count={result.pagination.totalPages}
                 onChange={(_event, page) => dispatch(setPage(page))}
                 color="primary"
