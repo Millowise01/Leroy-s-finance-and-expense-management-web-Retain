@@ -1,14 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
-
-function SigninPage() {
-  return <h1>Sign In</h1>;
-}
-
-function SignupPage() {
-  return <h1>Sign Up</h1>;
-}
+import SigninPage from "./pages/auth/SigninPage";
+import SignupPage from "./pages/auth/SignupPage";
 
 function DashboardPage() {
   return <h1>Dashboard</h1>;
@@ -67,6 +61,11 @@ function App() {
           />
         </Route>
       </Route>
+
+      <Route
+        path="*"
+        element={<Navigate to="/dashboard" replace />}
+      />
     </Routes>
   );
 }
