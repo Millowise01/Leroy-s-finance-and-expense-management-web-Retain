@@ -1,30 +1,33 @@
 import { api } from "./api";
 import type {
   Expense,
-  ExpenseFilters
+  ExpenseFilters,
+  PaymentMethod,
 } from "../types/expense";
 
-export async function getExpenses(
-  filters: ExpenseFilters
-) {
+export type ExpenseInput = {
+  title: string;
+  description?: string;
+  amount: string;
+  categoryId: string;
+  paymentMethod: PaymentMethod;
+  expenseDate: string;
+  notes?: string;
+};
+
+export async function getExpenses(filters: ExpenseFilters) {
   const params = {
     page: filters.page,
     limit: filters.limit,
     search: filters.search || undefined,
-    categoryId:
-      filters.categoryId || undefined,
-    paymentMethod:
-      filters.paymentMethod || undefined,
-    startDate:
-      filters.startDate || undefined,
-    endDate:
-      filters.endDate || undefined,
-    minAmount:
-      filters.minAmount || undefined,
-    maxAmount:
-      filters.maxAmount || undefined,
+    categoryId: filters.categoryId || undefined,
+    paymentMethod: filters.paymentMethod || undefined,
+    startDate: filters.startDate || undefined,
+    endDate: filters.endDate || undefined,
+    minAmount: filters.minAmount || undefined,
+    maxAmount: filters.maxAmount || undefined,
     sortBy: filters.sortBy,
-    sortOrder: filters.sortOrder
+    sortOrder: filters.sortOrder,
   };
 
   const response = await api.get<{
@@ -40,38 +43,13 @@ export async function getExpenses(
   return response.data;
 }
 
-export async function createExpense(
-  data: Omit<
-    Expense,
-    | "id"
-    | "category"
-    | "createdAt"
-    | "updatedAt"
-  >
-) {
-  const response = await api.post<{ expense: Expense }>(
-    "/expenses",
-    data
-  );
-
+export async function createExpense(data: ExpenseInput) {
+  const response = await api.post<{ expense: Expense }>("/expenses", data);
   return response.data.expense;
 }
 
-export async function updateExpense(
-  id: string,
-  data: Omit<
-    Expense,
-    | "id"
-    | "category"
-    | "createdAt"
-    | "updatedAt"
-  >
-) {
-  const response = await api.put<{ expense: Expense }>(
-    `/expenses/${id}`,
-    data
-  );
-
+export async function updateExpense(id: string, data: ExpenseInput) {
+  const response = await api.put<{ expense: Expense }>(`/expenses/${id}`, data);
   return response.data.expense;
 }
 
@@ -80,9 +58,6 @@ export async function deleteExpense(id: string) {
 }
 
 export async function getExpense(id: string) {
-  const response = await api.get<{ expense: Expense }>(
-    `/expenses/${id}`
-  );
-
+  const response = await api.get<{ expense: Expense }>(`/expenses/${id}`);
   return response.data.expense;
 }
