@@ -1,3 +1,5 @@
+import type { Category } from "./category";
+
 export type PaymentMethod =
   | "CASH"
   | "MOBILE_MONEY"
