@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   Alert,
   Button,
@@ -23,13 +23,13 @@ const paymentMethods: { value: PaymentMethod; label: string }[] = [
   { value: "OTHER", label: "Other" },
 ];
 
-type Props = {
+type Props = Readonly<{
   open: boolean;
   categories: Category[];
   expense?: Expense | null;
   onClose: () => void;
   onSave: (input: ExpenseInput) => Promise<void>;
-};
+}>;
 
 export default function ExpenseFormDialog({ open, categories, expense, onClose, onSave }: Props) {
   const [title, setTitle] = useState("");
@@ -59,7 +59,7 @@ export default function ExpenseFormDialog({ open, categories, expense, onClose, 
     setError("");
   }, [open, expense, categories]);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 

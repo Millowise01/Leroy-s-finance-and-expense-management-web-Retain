@@ -39,7 +39,7 @@ export default function AppLayout() {
     try {
       await signout();
     } finally {
-      navigate("/signin", { replace: true });
+      void navigate("/signin", { replace: true });
     }
   }
 

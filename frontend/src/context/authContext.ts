@@ -56,15 +56,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const value = useMemo<AuthContextValue>(
-    () => ({
-      user,
-      loading,
-      status: loading ? "loading" : user ? "authenticated" : "unauthenticated",
+    () => {
+      let status: AuthStatus = "unauthenticated";
+      if (loading) status = "loading";
+      else if (user) status = "authenticated";
+
+      return {
+        user,
+        loading,
+        status,
       isAuthenticated: Boolean(user),
       signin,
       signup,
       signout,
-    }),
+      };
+    },
     [user, loading],
   );
 

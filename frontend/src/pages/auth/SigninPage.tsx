@@ -8,7 +8,7 @@ import {
   TextField,
   Typography
 } from "@mui/material";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
 
@@ -22,7 +22,7 @@ export default function SigninPage() {
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(
-    event: React.FormEvent
+    event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
     setError("");
@@ -30,7 +30,7 @@ export default function SigninPage() {
 
     try {
       await signin(email, password);
-      navigate("/dashboard");
+      void navigate("/dashboard");
     } catch (err) {
       setError(
         err instanceof Error

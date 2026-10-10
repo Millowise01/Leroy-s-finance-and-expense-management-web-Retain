@@ -5,11 +5,11 @@ export default function PageHeading({
   title,
   subtitle,
   action,
-}: {
+  }: Readonly<{
   title: string;
   subtitle?: string;
   action?: ReactNode;
-}) {
+  }>) {
   return (
     <Box
       sx={{

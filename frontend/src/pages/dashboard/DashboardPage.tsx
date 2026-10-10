@@ -74,7 +74,9 @@ export default function DashboardPage() {
     return <Alert severity="info">No dashboard data is available.</Alert>;
   }
 
-  const budgetStatus = data.status === "OVER" ? "error" : data.status === "APPROACHING" ? "warning" : "success";
+  let budgetStatus: "error" | "warning" | "success" = "success";
+  if (data.status === "OVER") budgetStatus = "error";
+  else if (data.status === "APPROACHING") budgetStatus = "warning";
   const percentage = Math.min(Math.max(data.percentage, 0), 100);
 
   return (

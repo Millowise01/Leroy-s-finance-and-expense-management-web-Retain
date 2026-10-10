@@ -83,7 +83,7 @@ export default function AdminPage() {
     setDialogOpen(true);
   }
 
-  async function handleSave(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSave(event: import("react").FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const input: CategoryInput = {
       name: categoryName.trim(),
@@ -399,7 +399,7 @@ export default function AdminPage() {
   );
 }
 
-function RankedCategories({ title, rows }: { title: string; rows: AdminInsights["topCategories"] }) {
+function RankedCategories({ title, rows }: Readonly<{ title: string; rows: AdminInsights["topCategories"] }>) {
   return (
     <Card sx={{ height: "100%" }}>
       <CardContent>

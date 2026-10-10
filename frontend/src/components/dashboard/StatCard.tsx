@@ -6,12 +6,12 @@ export default function StatCard({
   value,
   helper,
   icon,
-}: {
+  }: Readonly<{
   label: string;
   value: string;
   helper?: string;
   icon: ReactNode;
-}) {
+  }>) {
   return (
     <Card sx={{ height: "100%" }}>
       <CardContent>
