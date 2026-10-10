@@ -1,49 +1,118 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-
-export type ExpenseSortField = 'date' | 'amount' | 'description';
-export type SortDirection = 'asc' | 'desc';
-
-export interface ExpenseFilters {
-  searchTerm: string;
-  categoryId: string | null;
-  paymentMethod: string | null;
-  startDate: string | null;
-  endDate: string | null;
-  minimumAmount: number | null;
-  maximumAmount: number | null;
-  sortField: ExpenseSortField;
-  sortDirection: SortDirection;
-  page: number;
-  pageSize: number;
-}
+import {
+  createSlice,
+  type PayloadAction
+} from "@reduxjs/toolkit";
+import type { ExpenseFilters } from "../../types/expense";
 
 const initialState: ExpenseFilters = {
-  searchTerm: '',
-  categoryId: null,
-  paymentMethod: null,
-  startDate: null,
-  endDate: null,
-  minimumAmount: null,
-  maximumAmount: null,
-  sortField: 'date',
-  sortDirection: 'desc',
+  search: "",
+  categoryId: "",
+  paymentMethod: "",
+  startDate: "",
+  endDate: "",
+  minAmount: "",
+  maxAmount: "",
+  sortBy: "date",
+  sortOrder: "desc",
   page: 1,
-  pageSize: 20,
+  limit: 10
 };
 
 const expenseFilterSlice = createSlice({
-  name: 'expenseFilters',
+  name: "expenseFilters",
   initialState,
   reducers: {
-    setFilter: <Key extends keyof ExpenseFilters>(
-      state: ExpenseFilters,
-      action: PayloadAction<{ key: Key; value: ExpenseFilters[Key] }>,
-    ) => {
-      state[action.payload.key] = action.payload.value;
+    setSearch(state, action: PayloadAction<string>) {
+      state.search = action.payload;
+      state.page = 1;
     },
-    resetFilters: () => initialState,
-  },
+
+    setCategoryId(
+      state,
+      action: PayloadAction<string>
+    ) {
+      state.categoryId = action.payload;
+      state.page = 1;
+    },
+
+    setPaymentMethod(
+      state,
+      action: PayloadAction<string>
+    ) {
+      state.paymentMethod = action.payload;
+      state.page = 1;
+    },
+
+    setStartDate(
+      state,
+      action: PayloadAction<string>
+    ) {
+      state.startDate = action.payload;
+      state.page = 1;
+    },
+
+    setEndDate(
+      state,
+      action: PayloadAction<string>
+    ) {
+      state.endDate = action.payload;
+      state.page = 1;
+    },
+
+    setMinAmount(
+      state,
+      action: PayloadAction<string>
+    ) {
+      state.minAmount = action.payload;
+      state.page = 1;
+    },
+
+    setMaxAmount(
+      state,
+      action: PayloadAction<string>
+    ) {
+      state.maxAmount = action.payload;
+      state.page = 1;
+    },
+
+    setSortBy(
+      state,
+      action: PayloadAction<"date" | "amount">
+    ) {
+      state.sortBy = action.payload;
+      state.page = 1;
+    },
+
+    setSortOrder(
+      state,
+      action: PayloadAction<"asc" | "desc">
+    ) {
+      state.sortOrder = action.payload;
+      state.page = 1;
+    },
+
+    setPage(state, action: PayloadAction<number>) {
+      state.page = action.payload;
+    },
+
+    resetFilters() {
+      return initialState;
+    }
+  }
 });
 
-export const { resetFilters, setFilter } = expenseFilterSlice.actions;
-export const expenseFilterReducer = expenseFilterSlice.reducer;
+export const {
+  setSearch,
+  setCategoryId,
+  setPaymentMethod,
+  setStartDate,
+  setEndDate,
+  setMinAmount,
+  setMaxAmount,
+  setSortBy,
+  setSortOrder,
+  setPage,
+  resetFilters
+} = expenseFilterSlice.actions;
+
+export default expenseFilterSlice.reducer;
