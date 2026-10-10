@@ -15,7 +15,17 @@ export type ExpenseInput = {
   notes?: string;
 };
 
-export async function getExpenses(filters: ExpenseFilters) {
+export type ExpensePage = {
+  expenses: Expense[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
+export async function getExpenses(filters: ExpenseFilters): Promise<ExpensePage> {
   const params = {
     page: filters.page,
     limit: filters.limit,
@@ -30,15 +40,7 @@ export async function getExpenses(filters: ExpenseFilters) {
     sortOrder: filters.sortOrder,
   };
 
-  const response = await api.get<{
-    expenses: Expense[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
-  }>("/expenses", { params });
+  const response = await api.get<ExpensePage>("/expenses", { params });
 
   return response.data;
 }

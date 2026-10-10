@@ -1,43 +1,50 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme } from "@mui/material/styles";
 
 export const theme = createTheme({
   palette: {
-    mode: 'light',
-    primary: {
-      main: '#102a43',
-      contrastText: '#ffffff',
-    },
-    secondary: {
-      main: '#b45309',
-    },
-    background: {
-      default: '#f6f7f9',
-      paper: '#ffffff',
-    },
+    mode: "light",
+    primary: { main: "#3659E3", dark: "#2442B8", light: "#E9EDFF" },
+    secondary: { main: "#0F9D83" },
+    background: { default: "#F6F8FC", paper: "#FFFFFF" },
+    success: { main: "#16845B" },
+    warning: { main: "#D88912" },
+    error: { main: "#D64545" }
   },
+  shape: { borderRadius: 14 },
   typography: {
-    fontFamily: '"Avenir Next", "Segoe UI", sans-serif',
-    h1: {
-      fontFamily: 'Georgia, "Times New Roman", serif',
-      fontWeight: 700,
-      letterSpacing: 0,
-    },
-    h2: {
-      fontFamily: 'Georgia, "Times New Roman", serif',
-      fontWeight: 700,
-      letterSpacing: 0,
-    },
-  },
-  shape: {
-    borderRadius: 8,
+    fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    h4: { fontSize: "clamp(1.7rem, 3vw, 2.2rem)" },
+    button: { textTransform: "none", fontWeight: 700 }
   },
   components: {
     MuiCard: {
       styleOverrides: {
         root: {
-          borderColor: '#d9e2ec',
-        },
-      },
+          border: "1px solid #E8ECF4",
+          boxShadow: "0 6px 24px rgba(30, 50, 90, 0.04)"
+        }
+      }
     },
-  },
+    MuiButton: {
+      defaultProps: { disableElevation: true },
+      styleOverrides: {
+        root: {
+          borderRadius: 10,
+          paddingInline: 16
+        }
+      }
+    },
+    MuiTextField: {
+      defaultProps: { size: "medium" }
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        head: {
+          fontWeight: 750,
+          color: "#64708A",
+          backgroundColor: "#F8FAFD"
+        }
+      }
+    }
+  }
 });
