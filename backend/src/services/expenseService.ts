@@ -49,7 +49,8 @@ export async function listExpenses(filters: ExpenseFilters) {
       ? {
           expenseDate: {
             ...(filters.startDate ? { gte: filters.startDate } : {}),
-            ...(filters.endDate ? { lte: filters.endDate } : {}),
+            // endDate is already the start of the next day (exclusive upper bound)
+            ...(filters.endDate ? { lt: filters.endDate } : {}),
           },
         }
       : {}),

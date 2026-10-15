@@ -31,6 +31,10 @@ export async function signupController(req: Request, res: Response): Promise<voi
       user: result.user,
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.errors[0]?.message ?? 'Invalid request data' });
+      return;
+    }
     res.status(400).json({
       message: error instanceof Error ? error.message : 'Unable to create account',
     });
@@ -47,7 +51,11 @@ export async function signinController(req: Request, res: Response): Promise<voi
     res.json({
       user: result.user,
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.errors[0]?.message ?? 'Invalid request data' });
+      return;
+    }
     res.status(401).json({
       message: 'Invalid email or password',
     });

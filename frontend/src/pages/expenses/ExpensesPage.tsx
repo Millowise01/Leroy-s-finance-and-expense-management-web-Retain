@@ -5,10 +5,13 @@ import {
   Button,
   Card,
   CardContent,
+  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
+  DialogContent,
   DialogTitle,
+  Divider,
   FormControl,
   InputAdornment,
   IconButton,
@@ -30,6 +33,7 @@ import Grid from "@mui/material/Grid";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import RestartAltOutlinedIcon from "@mui/icons-material/RestartAltOutlined";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
@@ -63,6 +67,7 @@ export default function ExpensesPage() {
   const [editing, setEditing] = useState<Expense | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
+  const [viewTarget, setViewTarget] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingDelete, setSavingDelete] = useState(false);
   const [error, setError] = useState("");
@@ -351,6 +356,11 @@ export default function ExpensesPage() {
                       <TableCell>{expense.paymentMethod.replaceAll("_", " ")}</TableCell>
                       <TableCell align="right">{formatCurrency(expense.amount)}</TableCell>
                       <TableCell align="right">
+                        <Tooltip title="View details">
+                          <IconButton aria-label={`View ${expense.title}`} onClick={() => setViewTarget(expense)}>
+                            <VisibilityOutlinedIcon />
+                          </IconButton>
+                        </Tooltip>
                         <Tooltip title="Edit">
                           <IconButton aria-label={`Edit ${expense.title}`} onClick={() => openEdit(expense)}>
                             <EditOutlinedIcon />
@@ -397,6 +407,59 @@ export default function ExpensesPage() {
         onSave={handleSave}
       />
 
+      {/* Expense details dialog */}
+      <Dialog open={Boolean(viewTarget)} onClose={() => setViewTarget(null)} fullWidth maxWidth="sm">
+        <DialogTitle>Expense details</DialogTitle>
+        <DialogContent>
+          {viewTarget && (
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              <DetailRow label="Title" value={viewTarget.title} />
+              <Divider />
+              <DetailRow label="Amount" value={formatCurrency(viewTarget.amount)} />
+              <Divider />
+              <DetailRow label="Category" value={viewTarget.category.name} />
+              <Divider />
+              <DetailRow label="Date" value={formatDate(viewTarget.expenseDate)} />
+              <Divider />
+              <DetailRow
+                label="Payment method"
+                value={
+                  <Chip
+                    label={viewTarget.paymentMethod.replaceAll("_", " ")}
+                    size="small"
+                    variant="outlined"
+                  />
+                }
+              />
+              {viewTarget.description && (
+                <>
+                  <Divider />
+                  <DetailRow label="Description" value={viewTarget.description} />
+                </>
+              )}
+              {viewTarget.notes && (
+                <>
+                  <Divider />
+                  <DetailRow label="Notes" value={viewTarget.notes} />
+                </>
+              )}
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setViewTarget(null)}>Close</Button>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              if (viewTarget) openEdit(viewTarget);
+              setViewTarget(null);
+            }}
+          >
+            Edit
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={Boolean(deleteTarget)} onClose={() => !savingDelete && setDeleteTarget(null)}>
         <DialogTitle>Delete this expense?</DialogTitle>
         <DialogActions sx={{ p: 2 }}>
@@ -409,5 +472,21 @@ export default function ExpensesPage() {
         </DialogActions>
       </Dialog>
     </>
+  );
+}
+
+function DetailRow({
+  label,
+  value,
+}: Readonly<{ label: string; value: React.ReactNode }>) {
+  return (
+    <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "space-between" }}>
+      <Typography variant="body2" color="text.secondary" sx={{ minWidth: 130 }}>
+        {label}
+      </Typography>
+      <Typography variant="body2" sx={{ fontWeight: 600, textAlign: { sm: "right" } }}>
+        {value}
+      </Typography>
+    </Stack>
   );
 }

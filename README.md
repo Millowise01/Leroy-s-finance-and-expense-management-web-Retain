@@ -25,7 +25,10 @@ backend, backed by a PostgreSQL database managed through Prisma.
 - [API reference](#api-reference)
 - [Authentication](#authentication)
 - [State management](#state-management)
+- [Admin account](#admin-account)
 - [Demo credentials](#demo-credentials)
+- [Testing with Postman](#testing-with-postman)
+- [Inspecting the database with pgAdmin](#inspecting-the-database-with-pgadmin)
 
 ---
 
@@ -38,6 +41,8 @@ backend, backed by a PostgreSQL database managed through Prisma.
 - **Expense management** — Create, view, update, and delete personal expenses.
   Each expense records a title, optional description, amount, category, date,
   payment method, and optional notes.
+- **Expense details view** — Click the eye icon on any expense row to inspect
+  all fields in a detail dialog without leaving the page.
 - **Filtering & search** — Filter expenses by keyword, category, payment method,
   date range, and amount range. Sort by date or amount in either direction.
   Results are paginated (10 per page by default, up to 100).
@@ -53,9 +58,9 @@ backend, backed by a PostgreSQL database managed through Prisma.
 - **Category management** — Create, update, and delete expense categories.
   Deletion is blocked when expenses are still assigned to the category.
 - **Platform insights** — Total registered users, total expenses recorded, total
-  expense value, expenses recorded this month, spending per category, top 5
-  most-used categories, bottom 5 least-used categories, 10 most recently added
-  expenses, and 10 most recently registered users.
+  expense value, expenses recorded this month (by transaction date), spending per
+  category, top 5 most-used categories, bottom 5 least-used categories, 10 most
+  recently added expenses, and 10 most recently registered users.
 
 ---
 
@@ -69,7 +74,7 @@ backend, backed by a PostgreSQL database managed through Prisma.
 | HTTP client | Axios |
 | Backend | Node.js, Express 5, TypeScript |
 | ORM | Prisma 7 with `@prisma/adapter-pg` |
-| Database | PostgreSQL |
+| Database | PostgreSQL 14+ |
 | Auth | JWT (`jsonwebtoken`) + `bcryptjs` + `httpOnly` cookie |
 | Validation | Zod |
 
@@ -143,12 +148,36 @@ cp backend/.env.example backend/.env          # bash / macOS / Linux
 
 | Variable | Required | Description |
 |---|---|---|
-| `DATABASE_URL` | ✅ | PostgreSQL connection string, e.g. `postgresql://user:pass@localhost:5432/retain` |
-| `JWT_SECRET` | ✅ | Long random string used to sign JWTs |
+| `DATABASE_URL` | ✅ | PostgreSQL connection string (see format below) |
+| `JWT_SECRET` | ✅ | Long random string used to sign JWTs (min 32 chars) |
 | `NODE_ENV` | — | `development` or `production` (defaults to `development`) |
 | `PORT` | — | Port the API listens on (default `4000`) |
 | `FRONTEND_URL` | — | CORS origin for the frontend (default `http://localhost:5173`) |
 | `SEED_DEMO_DATA` | — | Set to `true` only when running the demo seeder |
+
+**DATABASE_URL format:**
+
+```
+postgresql://<username>:<password>@<host>:<port>/<database>
+```
+
+Example for a local PostgreSQL installation where the superuser is `postgres`
+and the database is named `retain`:
+
+```
+DATABASE_URL=postgresql://postgres:YourActualPassword@localhost:5432/retain
+```
+
+> The password is the one you set when you installed PostgreSQL. If you need to
+> reset it, open pgAdmin → right-click the `postgres` login role → Properties →
+> Definition tab → set a new password → Save. Then update `DATABASE_URL` to
+> match.
+
+**Generating a secure JWT secret (run once, paste the output into `.env`):**
+
+```powershell
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
 
 ### `frontend/.env` (optional)
 
@@ -184,28 +213,34 @@ The seeder creates 1 admin, 15 demo users, 12 categories, and sample expenses.
 It uses deterministic upserts and never deletes existing records. Run it only
 against a local development database.
 
-```powershell
-# Temporarily enable seeding, then run
-$env:SEED_DEMO_DATA = 'true'
-npm run db:seed --workspace backend
-```
+Set `SEED_DEMO_DATA=true` in `backend/.env`, run the seed, then revert the value:
 
-Alternatively, set `SEED_DEMO_DATA=true` in `backend/.env`, run the seed, then
-revert the value.
+```powershell
+# In backend/.env temporarily set: SEED_DEMO_DATA=true
+npm run db:seed --workspace backend
+# Then revert: SEED_DEMO_DATA=false
+```
 
 ---
 
 ## Running the application
 
-```bash
-# Start both frontend and backend concurrently (if a root dev script is configured)
-# or start them in separate terminals:
+Open two separate PowerShell terminals and run one command in each:
 
-npm run dev:frontend   # http://localhost:5173
-npm run dev:backend    # http://localhost:4000
+**Terminal 1 — backend:**
+```powershell
+npm run dev:backend
 ```
-
+The API starts at `http://localhost:4000`.
 Health check: `GET http://localhost:4000/api/health`
+
+**Terminal 2 — frontend:**
+```powershell
+npm run dev:frontend
+```
+The app opens at `http://localhost:5173`.
+
+> Both must be running at the same time for the application to work.
 
 ---
 
@@ -234,6 +269,16 @@ All endpoints are prefixed with `/api`. Authenticated endpoints require a valid
 | `POST` | `/signout` | — | Clears the auth cookie. |
 | `GET` | `/me` | ✅ | Returns the currently authenticated user. |
 
+**Signup rules:**
+- `name` — 2–100 characters
+- `email` — valid email address, must be unique
+- `password` — 8–100 characters
+
+**Roles:** Public signup always creates a `USER` role account. `ADMIN` accounts
+are created only through the seed script or a direct database operation by an
+existing administrator. The signup endpoint ignores any `role` field in the
+request body.
+
 ### Expenses — `/api/expenses`
 
 | Method | Path | Auth | Description |
@@ -252,7 +297,7 @@ All endpoints are prefixed with `/api`. Authenticated endpoints require a valid
 | `categoryId` | string | Filter by category ID |
 | `paymentMethod` | string | `CASH` \| `MOBILE_MONEY` \| `DEBIT_CARD` \| `CREDIT_CARD` \| `BANK_TRANSFER` \| `OTHER` |
 | `startDate` | ISO date | Expenses on or after this date |
-| `endDate` | ISO date | Expenses on or before this date |
+| `endDate` | ISO date | Expenses on or before this date (inclusive of the full day) |
 | `minAmount` | number | Minimum expense amount |
 | `maxAmount` | number | Maximum expense amount |
 | `sortBy` | `date` \| `amount` | Sort field (default `date`) |
@@ -264,7 +309,7 @@ All endpoints are prefixed with `/api`. Authenticated endpoints require a valid
 
 ```json
 {
-  "title": "string (2–100 chars)",
+  "title": "string (2–100 chars, cannot be only whitespace)",
   "description": "string (optional, max 500)",
   "amount": "string decimal, e.g. \"12.50\"",
   "categoryId": "string",
@@ -294,13 +339,13 @@ All endpoints are prefixed with `/api`. Authenticated endpoints require a valid
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET` | `/` | ✅ | Returns spending summary, budget status, category breakdown, and recent expenses for the given month. Query params: `month`, `year`. |
+| `GET` | `/` | ✅ | Returns spending summary, budget status, category breakdown, and recent expenses. Query params: `month`, `year`. |
 
 ### Admin — `/api/admin`
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET` | `/insights` | ✅ Admin | Platform-wide statistics: user count, expense totals, category rankings, recent activity. |
+| `GET` | `/insights` | ✅ Admin | Platform-wide statistics. |
 
 ### Health
 
@@ -342,10 +387,31 @@ Resetting any filter also resets the page to `1` to avoid empty result pages.
 
 ---
 
+## Admin account
+
+The public signup form always creates a regular `USER` account. Administrator
+accounts are created through the seed script, which is the approved bootstrap
+procedure for this project.
+
+**To create the admin account locally:**
+
+1. Ensure `backend/.env` has the correct `DATABASE_URL`.
+2. Temporarily set `SEED_DEMO_DATA=true` in `backend/.env`.
+3. Run: `npm run db:seed --workspace backend`
+4. Revert `SEED_DEMO_DATA=false`.
+
+The seed creates `admin@retain.local` with password `Admin@12345`.
+
+**Security:** The `/api/auth/signup` endpoint ignores any `role` field in the
+request body. It is not possible to self-assign the `ADMIN` role through the
+public registration form.
+
+---
+
 ## Demo credentials
 
-These credentials are for **local development only** and must not be used in
-production.
+These credentials are created by the seed script and are for **local development
+only**. Do not use them in production.
 
 | Role | Email | Password |
 |---|---|---|
@@ -353,3 +419,94 @@ production.
 | User | `demo.user01@retain.local` | `User@12345` |
 
 Demo users are numbered `demo.user01` through `demo.user15`.
+
+---
+
+## Testing with Postman
+
+The API uses `httpOnly` cookies for authentication. Postman handles these
+automatically once you sign in.
+
+### Step 1 — confirm the backend is running
+
+```
+GET http://localhost:4000/api/health
+```
+
+Expected response: `{ "status": "ok", "application": "Retain" }`
+
+### Step 2 — sign in as admin
+
+```
+POST http://localhost:4000/api/auth/signin
+Content-Type: application/json
+
+{
+  "email": "admin@retain.local",
+  "password": "Admin@12345"
+}
+```
+
+Postman stores the `retain_token` cookie automatically. All subsequent requests
+in the same Postman session will include it.
+
+### Step 3 — verify authentication
+
+```
+GET http://localhost:4000/api/auth/me
+```
+
+Expected: the admin user object.
+
+### Step 4 — test protected endpoints
+
+```
+GET http://localhost:4000/api/expenses
+GET http://localhost:4000/api/dashboard?month=1&year=2026
+GET http://localhost:4000/api/admin/insights
+```
+
+### Step 5 — sign out
+
+```
+POST http://localhost:4000/api/auth/signout
+```
+
+### Step 6 — register a new regular user
+
+```
+POST http://localhost:4000/api/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Jane Smith",
+  "email": "jane@example.com",
+  "password": "SecurePass1"
+}
+```
+
+Expected: HTTP 201 with the new user object and a `retain_token` cookie.
+
+---
+
+## Inspecting the database with pgAdmin
+
+1. Open **pgAdmin 4**.
+2. Right-click **Servers → Register → Server**.
+3. On the **General** tab set Name: `Local Retain`.
+4. On the **Connection** tab:
+   - Host: `localhost`
+   - Port: `5432`
+   - Maintenance database: `postgres`
+   - Username: `postgres`
+   - Password: _(your PostgreSQL installation password)_
+5. Click **Save**.
+6. Expand **Servers → Local Retain → Databases → retain → Schemas → public → Tables**.
+
+You will see: `Budget`, `Category`, `Expense`, `User`, and `_prisma_migrations`.
+
+To view users (passwords are stored as bcrypt hashes — never in plain text):
+
+```sql
+SELECT id, name, email, role, "createdAt" FROM "User" ORDER BY "createdAt" DESC;
+```

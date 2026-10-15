@@ -10,9 +10,13 @@ import {
 } from '../services/expenseService.js';
 
 const expenseSchema = z.object({
-  title: z.string().min(2).max(100),
+  title: z
+    .string()
+    .min(2)
+    .max(100)
+    .refine((v) => v.trim().length >= 2, { message: 'Title must contain at least 2 non-whitespace characters' }),
   description: z.string().max(500).optional(),
-  amount: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  amount: z.string().regex(/^\d+(\.\d{1,2})?$/, { message: 'Amount must be a positive number with up to 2 decimal places' }),
   categoryId: z.string().min(1),
   paymentMethod: z.enum([
     'CASH',
@@ -22,9 +26,16 @@ const expenseSchema = z.object({
     'BANK_TRANSFER',
     'OTHER',
   ]),
-  expenseDate: z.coerce.date(),
+  expenseDate: z.string().refine((v) => !Number.isNaN(Date.parse(v)), { message: 'Invalid expense date' }).transform((v) => new Date(v)),
   notes: z.string().max(500).optional(),
 });
+
+function parseDateParam(value: unknown): Date | undefined {
+  if (typeof value !== 'string' || value === '') return undefined;
+  const ts = Date.parse(value);
+  if (Number.isNaN(ts)) return null as unknown as undefined; // signals invalid
+  return new Date(ts);
+}
 
 export async function listExpensesController(req: Request, res: Response): Promise<void> {
   if (!req.user) {
@@ -34,10 +45,65 @@ export async function listExpensesController(req: Request, res: Response): Promi
 
   const page = Math.max(Number(req.query.page) || 1, 1);
   const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
-
   const sortBy = req.query.sortBy === 'amount' ? 'amount' : 'date';
-
   const sortOrder = req.query.sortOrder === 'asc' ? 'asc' : 'desc';
+
+  // Validate date params
+  const rawStart = req.query.startDate;
+  const rawEnd = req.query.endDate;
+
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+
+  if (typeof rawStart === 'string' && rawStart !== '') {
+    const ts = Date.parse(rawStart);
+    if (Number.isNaN(ts)) {
+      res.status(400).json({ message: 'Invalid startDate parameter' });
+      return;
+    }
+    startDate = new Date(ts);
+  }
+
+  if (typeof rawEnd === 'string' && rawEnd !== '') {
+    const ts = Date.parse(rawEnd);
+    if (Number.isNaN(ts)) {
+      res.status(400).json({ message: 'Invalid endDate parameter' });
+      return;
+    }
+    // Use start of the NEXT day so the full end date is included
+    const d = new Date(ts);
+    endDate = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+  }
+
+  if (startDate && endDate && startDate >= endDate) {
+    res.status(400).json({ message: 'startDate must be earlier than endDate' });
+    return;
+  }
+
+  // Validate amount params
+  let minAmount: number | undefined;
+  let maxAmount: number | undefined;
+
+  if (typeof req.query.minAmount === 'string' && req.query.minAmount !== '') {
+    minAmount = Number(req.query.minAmount);
+    if (!Number.isFinite(minAmount) || minAmount < 0) {
+      res.status(400).json({ message: 'Invalid minAmount parameter' });
+      return;
+    }
+  }
+
+  if (typeof req.query.maxAmount === 'string' && req.query.maxAmount !== '') {
+    maxAmount = Number(req.query.maxAmount);
+    if (!Number.isFinite(maxAmount) || maxAmount < 0) {
+      res.status(400).json({ message: 'Invalid maxAmount parameter' });
+      return;
+    }
+  }
+
+  if (minAmount !== undefined && maxAmount !== undefined && minAmount > maxAmount) {
+    res.status(400).json({ message: 'minAmount cannot exceed maxAmount' });
+    return;
+  }
 
   const result = await listExpenses({
     userId: req.user.userId,
@@ -47,10 +113,10 @@ export async function listExpensesController(req: Request, res: Response): Promi
       typeof req.query.paymentMethod === 'string' && isPaymentMethod(req.query.paymentMethod)
         ? req.query.paymentMethod
         : undefined,
-    startDate: typeof req.query.startDate === 'string' ? new Date(req.query.startDate) : undefined,
-    endDate: typeof req.query.endDate === 'string' ? new Date(req.query.endDate) : undefined,
-    minAmount: typeof req.query.minAmount === 'string' ? Number(req.query.minAmount) : undefined,
-    maxAmount: typeof req.query.maxAmount === 'string' ? Number(req.query.maxAmount) : undefined,
+    startDate,
+    endDate,
+    minAmount,
+    maxAmount,
     sortBy,
     sortOrder,
     page,
