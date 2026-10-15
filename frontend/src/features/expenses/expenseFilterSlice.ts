@@ -1,25 +1,22 @@
-import {
-  createSlice,
-  type PayloadAction
-} from "@reduxjs/toolkit";
-import type { ExpenseFilters } from "../../types/expense";
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { ExpenseFilters } from '../../types/expense';
 
 const initialState: ExpenseFilters = {
-  search: "",
-  categoryId: "",
-  paymentMethod: "",
-  startDate: "",
-  endDate: "",
-  minAmount: "",
-  maxAmount: "",
-  sortBy: "date",
-  sortOrder: "desc",
+  search: '',
+  categoryId: '',
+  paymentMethod: '',
+  startDate: '',
+  endDate: '',
+  minAmount: '',
+  maxAmount: '',
+  sortBy: 'date',
+  sortOrder: 'desc',
   page: 1,
-  limit: 10
+  limit: 10,
 };
 
 const expenseFilterSlice = createSlice({
-  name: "expenseFilters",
+  name: 'expenseFilters',
   initialState,
   reducers: {
     setSearch(state, action: PayloadAction<string>) {
@@ -27,66 +24,42 @@ const expenseFilterSlice = createSlice({
       state.page = 1;
     },
 
-    setCategoryId(
-      state,
-      action: PayloadAction<string>
-    ) {
+    setCategoryId(state, action: PayloadAction<string>) {
       state.categoryId = action.payload;
       state.page = 1;
     },
 
-    setPaymentMethod(
-      state,
-      action: PayloadAction<string>
-    ) {
+    setPaymentMethod(state, action: PayloadAction<string>) {
       state.paymentMethod = action.payload;
       state.page = 1;
     },
 
-    setStartDate(
-      state,
-      action: PayloadAction<string>
-    ) {
+    setStartDate(state, action: PayloadAction<string>) {
       state.startDate = action.payload;
       state.page = 1;
     },
 
-    setEndDate(
-      state,
-      action: PayloadAction<string>
-    ) {
+    setEndDate(state, action: PayloadAction<string>) {
       state.endDate = action.payload;
       state.page = 1;
     },
 
-    setMinAmount(
-      state,
-      action: PayloadAction<string>
-    ) {
+    setMinAmount(state, action: PayloadAction<string>) {
       state.minAmount = action.payload;
       state.page = 1;
     },
 
-    setMaxAmount(
-      state,
-      action: PayloadAction<string>
-    ) {
+    setMaxAmount(state, action: PayloadAction<string>) {
       state.maxAmount = action.payload;
       state.page = 1;
     },
 
-    setSortBy(
-      state,
-      action: PayloadAction<"date" | "amount">
-    ) {
+    setSortBy(state, action: PayloadAction<'date' | 'amount'>) {
       state.sortBy = action.payload;
       state.page = 1;
     },
 
-    setSortOrder(
-      state,
-      action: PayloadAction<"asc" | "desc">
-    ) {
+    setSortOrder(state, action: PayloadAction<'asc' | 'desc'>) {
       state.sortOrder = action.payload;
       state.page = 1;
     },
@@ -97,8 +70,8 @@ const expenseFilterSlice = createSlice({
 
     resetFilters() {
       return initialState;
-    }
-  }
+    },
+  },
 });
 
 export const {
@@ -112,7 +85,7 @@ export const {
   setSortBy,
   setSortOrder,
   setPage,
-  resetFilters
+  resetFilters,
 } = expenseFilterSlice.actions;
 
 export default expenseFilterSlice.reducer;

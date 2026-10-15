@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
+import type { PaymentMethod } from '../../generated/prisma/client.js';
 import {
   createExpense,
   deleteExpense,
@@ -14,28 +15,27 @@ const expenseSchema = z.object({
     .string()
     .min(2)
     .max(100)
-    .refine((v) => v.trim().length >= 2, { message: 'Title must contain at least 2 non-whitespace characters' }),
+    .refine((v) => v.trim().length >= 2, {
+      message: 'Title must contain at least 2 non-whitespace characters',
+    }),
   description: z.string().max(500).optional(),
-  amount: z.string().regex(/^\d+(\.\d{1,2})?$/, { message: 'Amount must be a positive number with up to 2 decimal places' }),
-  categoryId: z.string().min(1),
-  paymentMethod: z.enum([
-    'CASH',
-    'MOBILE_MONEY',
-    'DEBIT_CARD',
-    'CREDIT_CARD',
-    'BANK_TRANSFER',
-    'OTHER',
-  ]),
-  expenseDate: z.string().refine((v) => !Number.isNaN(Date.parse(v)), { message: 'Invalid expense date' }).transform((v) => new Date(v)),
-  notes: z.string().max(500).optional(),
+  amount: z
+    .string()
+    .regex(/^\d+(\.\d{1,2})?$/, {
+      message: 'Amount must be a positive number with up to 2 decimal places',
+    })
+    .refine((v) => Number(v) > 0, { message: 'Amount must be greater than zero' }),
+  categoryId: z.string().min(1, { message: 'Category is required' }),
+  paymentMethod: z.enum(
+    ['CASH', 'MOBILE_MONEY', 'DEBIT_CARD', 'CREDIT_CARD', 'BANK_TRANSFER', 'OTHER'],
+    { message: 'Invalid payment method' },
+  ),
+  expenseDate: z
+    .string()
+    .refine((v) => !Number.isNaN(Date.parse(v)), { message: 'Invalid expense date' })
+    .transform((v) => new Date(v)),
+  notes: z.string().max(500, { message: 'Notes must not exceed 500 characters' }).optional(),
 });
-
-function parseDateParam(value: unknown): Date | undefined {
-  if (typeof value !== 'string' || value === '') return undefined;
-  const ts = Date.parse(value);
-  if (Number.isNaN(ts)) return null as unknown as undefined; // signals invalid
-  return new Date(ts);
-}
 
 export async function listExpensesController(req: Request, res: Response): Promise<void> {
   if (!req.user) {
@@ -43,10 +43,55 @@ export async function listExpensesController(req: Request, res: Response): Promi
     return;
   }
 
-  const page = Math.max(Number(req.query.page) || 1, 1);
-  const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
-  const sortBy = req.query.sortBy === 'amount' ? 'amount' : 'date';
-  const sortOrder = req.query.sortOrder === 'asc' ? 'asc' : 'desc';
+  // Validate pagination
+  let page = 1;
+  if (req.query.page !== undefined && req.query.page !== '') {
+    const parsedPage = Number(req.query.page);
+    if (!Number.isInteger(parsedPage) || parsedPage < 1) {
+      res.status(400).json({ message: 'page must be a positive integer' });
+      return;
+    }
+    page = parsedPage;
+  }
+
+  let limit = 10;
+  if (req.query.limit !== undefined && req.query.limit !== '') {
+    const parsedLimit = Number(req.query.limit);
+    if (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 100) {
+      res.status(400).json({ message: 'limit must be an integer between 1 and 100' });
+      return;
+    }
+    limit = parsedLimit;
+  }
+
+  // Validate sortBy and sortOrder
+  let sortBy: 'date' | 'amount' = 'date';
+  if (req.query.sortBy !== undefined && req.query.sortBy !== '') {
+    if (req.query.sortBy !== 'date' && req.query.sortBy !== 'amount') {
+      res.status(400).json({ message: 'sortBy must be either "date" or "amount"' });
+      return;
+    }
+    sortBy = req.query.sortBy;
+  }
+
+  let sortOrder: 'asc' | 'desc' = 'desc';
+  if (req.query.sortOrder !== undefined && req.query.sortOrder !== '') {
+    if (req.query.sortOrder !== 'asc' && req.query.sortOrder !== 'desc') {
+      res.status(400).json({ message: 'sortOrder must be either "asc" or "desc"' });
+      return;
+    }
+    sortOrder = req.query.sortOrder;
+  }
+
+  // Validate paymentMethod
+  let paymentMethod: string | undefined;
+  if (typeof req.query.paymentMethod === 'string' && req.query.paymentMethod !== '') {
+    if (!isPaymentMethod(req.query.paymentMethod)) {
+      res.status(400).json({ message: 'Invalid paymentMethod parameter' });
+      return;
+    }
+    paymentMethod = req.query.paymentMethod;
+  }
 
   // Validate date params
   const rawStart = req.query.startDate;
@@ -75,9 +120,13 @@ export async function listExpensesController(req: Request, res: Response): Promi
     endDate = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
   }
 
-  if (startDate && endDate && startDate >= endDate) {
-    res.status(400).json({ message: 'startDate must be earlier than endDate' });
-    return;
+  if (rawStart && rawEnd && typeof rawStart === 'string' && typeof rawEnd === 'string') {
+    const parsedRawStart = new Date(Date.parse(rawStart));
+    const parsedRawEnd = new Date(Date.parse(rawEnd));
+    if (parsedRawStart > parsedRawEnd) {
+      res.status(400).json({ message: 'startDate cannot be later than endDate' });
+      return;
+    }
   }
 
   // Validate amount params
@@ -109,10 +158,7 @@ export async function listExpensesController(req: Request, res: Response): Promi
     userId: req.user.userId,
     search: typeof req.query.search === 'string' ? req.query.search : undefined,
     categoryId: typeof req.query.categoryId === 'string' ? req.query.categoryId : undefined,
-    paymentMethod:
-      typeof req.query.paymentMethod === 'string' && isPaymentMethod(req.query.paymentMethod)
-        ? req.query.paymentMethod
-        : undefined,
+    paymentMethod: paymentMethod as PaymentMethod | undefined,
     startDate,
     endDate,
     minAmount,
@@ -166,6 +212,10 @@ export async function createExpenseController(req: Request, res: Response): Prom
 
     res.status(201).json({ expense });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.issues[0]?.message ?? 'Invalid expense data' });
+      return;
+    }
     res.status(400).json({
       message: error instanceof Error ? error.message : 'Unable to create expense',
     });
@@ -192,6 +242,10 @@ export async function updateExpenseController(req: Request, res: Response): Prom
 
     res.json({ expense });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.issues[0]?.message ?? 'Invalid expense data' });
+      return;
+    }
     res.status(400).json({
       message: error instanceof Error ? error.message : 'Unable to update expense',
     });

@@ -1,7 +1,4 @@
-export type BudgetStatus =
-  | "WITHIN"
-  | "APPROACHING"
-  | "OVER";
+export type BudgetStatus = 'WITHIN' | 'APPROACHING' | 'OVER';
 
 export type BudgetSummary = {
   budget: {

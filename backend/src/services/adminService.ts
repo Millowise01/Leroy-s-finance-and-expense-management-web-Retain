@@ -106,3 +106,41 @@ export async function getAdminInsights() {
     recentUsers,
   };
 }
+
+export async function createAdminUser(data: {
+  name: string;
+  email: string;
+  password: string;
+  role: 'USER' | 'ADMIN';
+}) {
+  const normalizedEmail = data.email.trim().toLowerCase();
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+  });
+
+  if (existingUser) {
+    throw new Error('An account with this email already exists');
+  }
+
+  const { hashPassword } = await import('../utils/password.js');
+  const passwordHash = await hashPassword(data.password);
+
+  const user = await prisma.user.create({
+    data: {
+      name: data.name.trim(),
+      email: normalizedEmail,
+      password: passwordHash,
+      role: data.role,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true,
+    },
+  });
+
+  return user;
+}

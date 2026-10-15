@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   Alert,
   Box,
@@ -15,30 +15,32 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from "@mui/material";
-import Grid from "@mui/material/Grid";
-import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
-import TrendingDownOutlinedIcon from "@mui/icons-material/TrendingDownOutlined";
-import SavingsOutlinedIcon from "@mui/icons-material/SavingsOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
-import { Link } from "react-router-dom";
-import { getDashboard } from "../../services/dashboardService";
-import type { DashboardData } from "../../types/dashboard";
-import { formatCurrency, formatDate, monthLabel } from "../../utils/formatters";
-import { getErrorMessage } from "../../utils/getErrorMessage";
-import PageHeading from "../../components/common/PageHeading";
-import StatCard from "../../components/dashboard/StatCard";
+} from '@mui/material';
+import Grid from '@mui/material/Grid';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import TrendingDownOutlinedIcon from '@mui/icons-material/TrendingDownOutlined';
+import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import { Link } from 'react-router-dom';
+import { getDashboard } from '../../services/dashboardService';
+import type { DashboardData } from '../../types/dashboard';
+import { formatCurrency, formatDate, monthLabel } from '../../utils/formatters';
+import { getErrorMessage } from '../../utils/getErrorMessage';
+import PageHeading from '../../components/common/PageHeading';
+import StatCard from '../../components/dashboard/StatCard';
 
 export default function DashboardPage() {
-  const now = new Date();
   const [data, setData] = useState<DashboardData | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
+    const currentDate = new Date();
+    const month = currentDate.getMonth() + 1;
+    const year = currentDate.getFullYear();
 
-    getDashboard(now.getMonth() + 1, now.getFullYear())
+    getDashboard(month, year)
       .then((result) => {
         if (active) setData(result);
       })
@@ -52,11 +54,11 @@ export default function DashboardPage() {
     return () => {
       active = false;
     };
-  }, [now.getMonth(), now.getFullYear()]);
+  }, []);
 
   if (loading) {
     return (
-      <Box sx={{ display: "grid", placeItems: "center", minHeight: 300 }}>
+      <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 300 }}>
         <CircularProgress />
       </Box>
     );
@@ -64,7 +66,10 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <Alert severity="error" action={<Button onClick={() => window.location.reload()}>Retry</Button>}>
+      <Alert
+        severity="error"
+        action={<Button onClick={() => window.location.reload()}>Retry</Button>}
+      >
         {error}
       </Alert>
     );
@@ -74,9 +79,9 @@ export default function DashboardPage() {
     return <Alert severity="info">No dashboard data is available.</Alert>;
   }
 
-  let budgetStatus: "error" | "warning" | "success" = "success";
-  if (data.status === "OVER") budgetStatus = "error";
-  else if (data.status === "APPROACHING") budgetStatus = "warning";
+  let budgetStatus: 'error' | 'warning' | 'success' = 'success';
+  if (data.status === 'OVER') budgetStatus = 'error';
+  else if (data.status === 'APPROACHING') budgetStatus = 'warning';
   const percentage = Math.min(Math.max(data.percentage, 0), 100);
 
   return (
@@ -112,27 +117,35 @@ export default function DashboardPage() {
           <StatCard
             label="Budget remaining"
             value={formatCurrency(data.remaining)}
-            helper={data.remaining < 0 ? "Above your budget" : "Available this month"}
+            helper={data.remaining < 0 ? 'Above your budget' : 'Available this month'}
             icon={<SavingsOutlinedIcon />}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, xl: 3 }}>
           <StatCard
             label="Highest expense"
-            value={data.highestExpense ? formatCurrency(data.highestExpense.amount) : formatCurrency(0)}
-            helper={data.highestExpense?.title ?? "No expenses yet"}
+            value={
+              data.highestExpense ? formatCurrency(data.highestExpense.amount) : formatCurrency(0)
+            }
+            helper={data.highestExpense?.title ?? 'No expenses yet'}
             icon={<ReceiptLongOutlinedIcon />}
           />
         </Grid>
 
         <Grid size={{ xs: 12, md: 5 }}>
-          <Card sx={{ height: "100%" }}>
+          <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+              <Stack
+                direction="row"
+                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
+              >
                 <Typography variant="h6" sx={{ fontWeight: 750 }}>
                   Budget progress
                 </Typography>
-                <Chip color={budgetStatus} label={data.budget <= 0 ? "Set a budget" : data.status} />
+                <Chip
+                  color={budgetStatus}
+                  label={data.budget <= 0 ? 'Set a budget' : data.status}
+                />
               </Stack>
               <Typography variant="h4" sx={{ fontWeight: 800 }}>
                 {data.percentage.toFixed(0)}%
@@ -146,7 +159,7 @@ export default function DashboardPage() {
               <Typography color="text.secondary" variant="body2">
                 {data.budget > 0
                   ? `${formatCurrency(data.totalSpent)} spent out of ${formatCurrency(data.budget)}.`
-                  : "Set a monthly budget to track your progress."}
+                  : 'Set a monthly budget to track your progress.'}
               </Typography>
               <Button component={Link} to="/budget" sx={{ mt: 2 }}>
                 Manage budget
@@ -156,7 +169,7 @@ export default function DashboardPage() {
         </Grid>
 
         <Grid size={{ xs: 12, md: 7 }}>
-          <Card sx={{ height: "100%" }}>
+          <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 750, mb: 2 }}>
                 Spending by category
@@ -171,7 +184,7 @@ export default function DashboardPage() {
                     const share = data.totalSpent > 0 ? (item.amount / data.totalSpent) * 100 : 0;
                     return (
                       <Box key={item.categoryId}>
-                        <Stack direction="row" sx={{ justifyContent: "space-between", mb: 0.5 }}>
+                        <Stack direction="row" sx={{ justifyContent: 'space-between', mb: 0.5 }}>
                           <Typography variant="body2">{item.categoryName}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 700 }}>
                             {formatCurrency(item.amount)}
@@ -194,7 +207,10 @@ export default function DashboardPage() {
         <Grid size={12}>
           <Card>
             <CardContent>
-              <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+              <Stack
+                direction="row"
+                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}
+              >
                 <Typography variant="h6" sx={{ fontWeight: 750 }}>
                   Recent expenses
                 </Typography>
@@ -208,7 +224,7 @@ export default function DashboardPage() {
                   No expenses recorded for this month yet.
                 </Typography>
               ) : (
-                <Box sx={{ overflowX: "auto" }}>
+                <Box sx={{ overflowX: 'auto' }}>
                   <Table size="small">
                     <TableHead>
                       <TableRow>
@@ -224,7 +240,7 @@ export default function DashboardPage() {
                           <TableCell>
                             <Typography sx={{ fontWeight: 650 }}>{expense.title}</Typography>
                             <Typography variant="caption" color="text.secondary">
-                              {expense.paymentMethod.replaceAll("_", " ")}
+                              {expense.paymentMethod.replaceAll('_', ' ')}
                             </Typography>
                           </TableCell>
                           <TableCell>{expense.category.name}</TableCell>

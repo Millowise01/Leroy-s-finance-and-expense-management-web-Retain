@@ -1,5 +1,5 @@
-import { api } from "./api";
-import type { Category } from "../types/category";
+import { api } from './api';
+import type { Category } from '../types/category';
 
 export type CategoryInput = {
   name: string;
@@ -7,12 +7,12 @@ export type CategoryInput = {
 };
 
 export async function getCategories(): Promise<Category[]> {
-  const response = await api.get<{ categories: Category[] }>("/categories");
+  const response = await api.get<{ categories: Category[] }>('/categories');
   return response.data.categories;
 }
 
 export async function createCategory(data: CategoryInput): Promise<Category> {
-  const response = await api.post<{ category: Category }>("/categories", data);
+  const response = await api.post<{ category: Category }>('/categories', data);
   return response.data.category;
 }
 

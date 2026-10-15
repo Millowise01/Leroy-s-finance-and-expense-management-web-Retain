@@ -1,4 +1,4 @@
-import type { Expense } from "./expense";
+import type { Expense } from './expense';
 
 export type DashboardData = {
   month: number;
@@ -7,7 +7,7 @@ export type DashboardData = {
   budget: number;
   remaining: number;
   percentage: number;
-  status: "WITHIN" | "APPROACHING" | "OVER";
+  status: 'WITHIN' | 'APPROACHING' | 'OVER';
   highestExpense: Expense | null;
   spendingByCategory: {
     categoryId: string;

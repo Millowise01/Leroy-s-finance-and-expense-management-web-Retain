@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import {
   Alert,
   Box,
@@ -20,46 +20,52 @@ import {
   TextField,
   Tooltip,
   Typography,
-} from "@mui/material";
-import Grid from "@mui/material/Grid";
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
-import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
-import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import { getAdminInsights } from "../../services/adminService";
-import { createCategory, deleteCategory, getCategories, updateCategory, type CategoryInput } from "../../services/categoryService";
-import type { AdminInsights } from "../../types/admin";
-import type { Category } from "../../types/category";
-import { formatCurrency, formatDate } from "../../utils/formatters";
-import { getErrorMessage } from "../../utils/getErrorMessage";
-import PageHeading from "../../components/common/PageHeading";
-import StatCard from "../../components/dashboard/StatCard";
+} from '@mui/material';
+import Grid from '@mui/material/Grid';
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import { getAdminInsights } from '../../services/adminService';
+import {
+  createCategory,
+  deleteCategory,
+  getCategories,
+  updateCategory,
+  type CategoryInput,
+} from '../../services/categoryService';
+import type { AdminInsights } from '../../types/admin';
+import type { Category } from '../../types/category';
+import { formatCurrency, formatDate } from '../../utils/formatters';
+import { getErrorMessage } from '../../utils/getErrorMessage';
+import PageHeading from '../../components/common/PageHeading';
+import StatCard from '../../components/dashboard/StatCard';
 
 export default function AdminPage() {
   const [insights, setInsights] = useState<AdminInsights | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
-  const [categoryName, setCategoryName] = useState("");
-  const [description, setDescription] = useState("");
+  const [categoryName, setCategoryName] = useState('');
+  const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError('');
     try {
       const [stats, categoryList] = await Promise.all([getAdminInsights(), getCategories()]);
       setInsights(stats);
       setCategories(categoryList);
     } catch (reason) {
-      setError(getErrorMessage(reason, "Could not load admin insights."));
+      setError(getErrorMessage(reason, 'Could not load admin insights.'));
     } finally {
       setLoading(false);
     }
@@ -71,19 +77,19 @@ export default function AdminPage() {
 
   function openCreate() {
     setEditing(null);
-    setCategoryName("");
-    setDescription("");
+    setCategoryName('');
+    setDescription('');
     setDialogOpen(true);
   }
 
   function openEdit(category: Category) {
     setEditing(category);
     setCategoryName(category.name);
-    setDescription(category.description ?? "");
+    setDescription(category.description ?? '');
     setDialogOpen(true);
   }
 
-  async function handleSave(event: import("react").FormEvent<HTMLFormElement>) {
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const input: CategoryInput = {
       name: categoryName.trim(),
@@ -91,20 +97,20 @@ export default function AdminPage() {
     };
 
     if (input.name.length < 2) {
-      setError("Category name must contain at least two characters.");
+      setError('Category name must contain at least two characters.');
       return;
     }
 
     setSaving(true);
-    setError("");
+    setError('');
     try {
       if (editing) await updateCategory(editing.id, input);
       else await createCategory(input);
       setDialogOpen(false);
-      setNotice(editing ? "Category updated." : "Category created.");
+      setNotice(editing ? 'Category updated.' : 'Category created.');
       await load();
     } catch (reason) {
-      setError(getErrorMessage(reason, "Could not save category."));
+      setError(getErrorMessage(reason, 'Could not save category.'));
     } finally {
       setSaving(false);
     }
@@ -112,17 +118,17 @@ export default function AdminPage() {
 
   async function handleDelete() {
     if (!deleteTarget) return;
-    setError("");
+    setError('');
     try {
       await deleteCategory(deleteTarget.id);
       setDeleteTarget(null);
-      setNotice("Category deleted.");
+      setNotice('Category deleted.');
       await load();
     } catch (reason) {
       setError(
         getErrorMessage(
           reason,
-          "Could not delete category. A category used by an expense may not be deletable.",
+          'Could not delete category. A category used by an expense may not be deletable.',
         ),
       );
     }
@@ -130,7 +136,7 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: "grid", placeItems: "center", minHeight: 300 }}>
+      <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 300 }}>
         <CircularProgress />
       </Box>
     );
@@ -138,14 +144,17 @@ export default function AdminPage() {
 
   return (
     <>
-      <PageHeading title="Admin dashboard" subtitle="Platform activity and expense category management." />
+      <PageHeading
+        title="Admin dashboard"
+        subtitle="Platform activity and expense category management."
+      />
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
           {error}
         </Alert>
       )}
       {notice && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setNotice("")}>
+        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setNotice('')}>
           {notice}
         </Alert>
       )}
@@ -192,7 +201,10 @@ export default function AdminPage() {
               <RankedCategories title="Top 5 most-used categories" rows={insights.topCategories} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <RankedCategories title="Bottom 5 least-used categories" rows={insights.bottomCategories} />
+              <RankedCategories
+                title="Bottom 5 least-used categories"
+                rows={insights.bottomCategories}
+              />
             </Grid>
           </Grid>
 
@@ -201,7 +213,7 @@ export default function AdminPage() {
               <Typography variant="h6" sx={{ fontWeight: 750, mb: 2 }}>
                 Spending per category
               </Typography>
-              <Box sx={{ overflowX: "auto" }}>
+              <Box sx={{ overflowX: 'auto' }}>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
@@ -226,12 +238,12 @@ export default function AdminPage() {
 
           <Grid container spacing={2.5} sx={{ mb: 2.5 }}>
             <Grid size={{ xs: 12, lg: 7 }}>
-              <Card sx={{ height: "100%" }}>
+              <Card sx={{ height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: 750, mb: 2 }}>
                     Recently added expenses
                   </Typography>
-                  <Box sx={{ overflowX: "auto" }}>
+                  <Box sx={{ overflowX: 'auto' }}>
                     <Table size="small">
                       <TableHead>
                         <TableRow>
@@ -263,23 +275,28 @@ export default function AdminPage() {
             </Grid>
 
             <Grid size={{ xs: 12, lg: 5 }}>
-              <Card sx={{ height: "100%" }}>
+              <Card sx={{ height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ fontWeight: 750, mb: 2 }}>
                     Recently registered users
                   </Typography>
-                  <Stack divider={<Box sx={{ borderBottom: "1px solid", borderColor: "divider" }} />} spacing={1.5}>
+                  <Stack
+                    divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}
+                    spacing={1.5}
+                  >
                     {insights.recentUsers.map((person) => (
                       <Box key={person.id} sx={{ py: 0.5 }}>
-                        <Stack direction="row" sx={{ gap: 1, justifyContent: "space-between" }}>
+                        <Stack direction="row" sx={{ gap: 1, justifyContent: 'space-between' }}>
                           <Typography sx={{ fontWeight: 650 }}>{person.name}</Typography>
-                          <Typography variant="caption" color="text.secondary">{person.role}</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {person.role}
+                          </Typography>
                         </Stack>
                         <Typography variant="body2" color="text.secondary">
                           {person.email}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {person.createdAt ? formatDate(person.createdAt) : "—"}
+                          {person.createdAt ? formatDate(person.createdAt) : '—'}
                         </Typography>
                       </Box>
                     ))}
@@ -294,9 +311,9 @@ export default function AdminPage() {
       <Card>
         <CardContent>
           <Stack
-            direction={{ xs: "column", sm: "row" }}
+            direction={{ xs: 'column', sm: 'row' }}
             spacing={1}
-            sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, mb: 2 }}
+            sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' }, mb: 2 }}
           >
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 750 }}>
@@ -310,7 +327,7 @@ export default function AdminPage() {
               Add category
             </Button>
           </Stack>
-          <Box sx={{ overflowX: "auto" }}>
+          <Box sx={{ overflowX: 'auto' }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -323,10 +340,13 @@ export default function AdminPage() {
                 {categories.map((category) => (
                   <TableRow key={category.id} hover>
                     <TableCell>{category.name}</TableCell>
-                    <TableCell>{category.description || "—"}</TableCell>
+                    <TableCell>{category.description || '—'}</TableCell>
                     <TableCell align="right">
                       <Tooltip title="Edit">
-                        <IconButton aria-label={`Edit ${category.name}`} onClick={() => openEdit(category)}>
+                        <IconButton
+                          aria-label={`Edit ${category.name}`}
+                          onClick={() => openEdit(category)}
+                        >
                           <EditOutlinedIcon />
                         </IconButton>
                       </Tooltip>
@@ -348,9 +368,14 @@ export default function AdminPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={dialogOpen} onClose={() => !saving && setDialogOpen(false)} fullWidth maxWidth="sm">
+      <Dialog
+        open={dialogOpen}
+        onClose={() => !saving && setDialogOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
         <form onSubmit={handleSave}>
-          <DialogTitle>{editing ? "Edit category" : "Create category"}</DialogTitle>
+          <DialogTitle>{editing ? 'Edit category' : 'Create category'}</DialogTitle>
           <DialogContent>
             <Stack spacing={2} sx={{ pt: 1 }}>
               <TextField
@@ -375,7 +400,7 @@ export default function AdminPage() {
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={saving}>
-              {saving ? "Saving…" : "Save category"}
+              {saving ? 'Saving…' : 'Save category'}
             </Button>
           </DialogActions>
         </form>
@@ -399,9 +424,12 @@ export default function AdminPage() {
   );
 }
 
-function RankedCategories({ title, rows }: Readonly<{ title: string; rows: AdminInsights["topCategories"] }>) {
+function RankedCategories({
+  title,
+  rows,
+}: Readonly<{ title: string; rows: AdminInsights['topCategories'] }>) {
   return (
-    <Card sx={{ height: "100%" }}>
+    <Card sx={{ height: '100%' }}>
       <CardContent>
         <Typography variant="h6" sx={{ fontWeight: 750, mb: 2 }}>
           {title}
@@ -411,16 +439,20 @@ function RankedCategories({ title, rows }: Readonly<{ title: string; rows: Admin
         ) : (
           <Stack spacing={1.5}>
             {rows.map((row, index) => (
-              <Stack key={row.id} direction="row" sx={{ gap: 2, alignItems: "center", justifyContent: "space-between" }}>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: "center" }}>
+              <Stack
+                key={row.id}
+                direction="row"
+                sx={{ gap: 2, alignItems: 'center', justifyContent: 'space-between' }}
+              >
+                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center' }}>
                   <Box
                     sx={{
                       width: 30,
                       height: 30,
                       borderRadius: 2,
-                      bgcolor: "action.hover",
-                      display: "grid",
-                      placeItems: "center",
+                      bgcolor: 'action.hover',
+                      display: 'grid',
+                      placeItems: 'center',
                       fontWeight: 750,
                     }}
                   >

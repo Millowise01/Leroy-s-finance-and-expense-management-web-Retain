@@ -1,5 +1,5 @@
-import { api } from "./api";
-import type { BudgetSummary } from "../types/budget";
+import { api } from './api';
+import type { BudgetSummary } from '../types/budget';
 
 export type SaveBudgetInput = {
   amount: string;
@@ -13,8 +13,8 @@ export async function getBudget(year: number, month: number): Promise<BudgetSumm
 }
 
 export async function saveBudget(data: SaveBudgetInput) {
-  const response = await api.post<{ budget: NonNullable<BudgetSummary["budget"]> }>(
-    "/budgets",
+  const response = await api.post<{ budget: NonNullable<BudgetSummary['budget']> }>(
+    '/budgets',
     data,
   );
 

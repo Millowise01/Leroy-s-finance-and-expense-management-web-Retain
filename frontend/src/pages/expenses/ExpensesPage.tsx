@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   Box,
@@ -28,15 +28,15 @@ import {
   TextField,
   Tooltip,
   Typography,
-} from "@mui/material";
-import Grid from "@mui/material/Grid";
-import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import RestartAltOutlinedIcon from "@mui/icons-material/RestartAltOutlined";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
+} from '@mui/material';
+import Grid from '@mui/material/Grid';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import RestartAltOutlinedIcon from '@mui/icons-material/RestartAltOutlined';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import {
   resetFilters,
   setCategoryId,
@@ -49,15 +49,21 @@ import {
   setSortBy,
   setSortOrder,
   setStartDate,
-} from "../../features/expenses/expenseFilterSlice";
-import { createExpense, deleteExpense, getExpenses, updateExpense, type ExpensePage } from "../../services/expenseService";
-import { getCategories } from "../../services/categoryService";
-import type { Category } from "../../types/category";
-import type { Expense } from "../../types/expense";
-import { getErrorMessage } from "../../utils/getErrorMessage";
-import { formatCurrency, formatDate } from "../../utils/formatters";
-import PageHeading from "../../components/common/PageHeading";
-import ExpenseFormDialog from "../../components/expenses/ExpenseFormDialog";
+} from '../../features/expenses/expenseFilterSlice';
+import {
+  createExpense,
+  deleteExpense,
+  getExpenses,
+  updateExpense,
+  type ExpensePage,
+} from '../../services/expenseService';
+import { getCategories } from '../../services/categoryService';
+import type { Category } from '../../types/category';
+import type { Expense } from '../../types/expense';
+import { getErrorMessage } from '../../utils/getErrorMessage';
+import { formatCurrency, formatDate } from '../../utils/formatters';
+import PageHeading from '../../components/common/PageHeading';
+import ExpenseFormDialog from '../../components/expenses/ExpenseFormDialog';
 
 export default function ExpensesPage() {
   const dispatch = useAppDispatch();
@@ -70,18 +76,18 @@ export default function ExpensesPage() {
   const [viewTarget, setViewTarget] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingDelete, setSavingDelete] = useState(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError('');
     try {
       const [pageData, categoryData] = await Promise.all([getExpenses(filters), getCategories()]);
       setResult(pageData);
       setCategories(categoryData);
     } catch (reason) {
-      setError(getErrorMessage(reason, "Could not load expenses."));
+      setError(getErrorMessage(reason, 'Could not load expenses.'));
     } finally {
       setLoading(false);
     }
@@ -97,24 +103,24 @@ export default function ExpensesPage() {
       else await createExpense(input);
       setFormOpen(false);
       setEditing(null);
-      setNotice(editing ? "Expense updated." : "Expense created.");
+      setNotice(editing ? 'Expense updated.' : 'Expense created.');
       await load();
     } catch (reason) {
-      throw new Error(getErrorMessage(reason, "Could not save expense."));
+      throw new Error(getErrorMessage(reason, 'Could not save expense.'), { cause: reason });
     }
   }
 
   async function handleDelete() {
     if (!deleteTarget) return;
     setSavingDelete(true);
-    setError("");
+    setError('');
     try {
       await deleteExpense(deleteTarget.id);
       setDeleteTarget(null);
-      setNotice("Expense deleted.");
+      setNotice('Expense deleted.');
       await load();
     } catch (reason) {
-      setError(getErrorMessage(reason, "Could not delete expense."));
+      setError(getErrorMessage(reason, 'Could not delete expense.'));
     } finally {
       setSavingDelete(false);
     }
@@ -143,12 +149,12 @@ export default function ExpensesPage() {
       />
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
           {error}
         </Alert>
       )}
       {notice && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setNotice("")}>
+        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setNotice('')}>
           {notice}
         </Alert>
       )}
@@ -166,7 +172,7 @@ export default function ExpensesPage() {
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
-                        <SearchOutlinedIcon sx={{ color: "text.secondary" }} />
+                        <SearchOutlinedIcon sx={{ color: 'text.secondary' }} />
                       </InputAdornment>
                     ),
                   },
@@ -202,15 +208,15 @@ export default function ExpensesPage() {
                 >
                   <MenuItem value="">All methods</MenuItem>
                   {[
-                    "CASH",
-                    "MOBILE_MONEY",
-                    "DEBIT_CARD",
-                    "CREDIT_CARD",
-                    "BANK_TRANSFER",
-                    "OTHER",
+                    'CASH',
+                    'MOBILE_MONEY',
+                    'DEBIT_CARD',
+                    'CREDIT_CARD',
+                    'BANK_TRANSFER',
+                    'OTHER',
                   ].map((method) => (
                     <MenuItem key={method} value={method}>
-                      {method.replaceAll("_", " ")}
+                      {method.replaceAll('_', ' ')}
                     </MenuItem>
                   ))}
                 </Select>
@@ -242,7 +248,7 @@ export default function ExpensesPage() {
                 type="number"
                 value={filters.minAmount}
                 onChange={(event) => dispatch(setMinAmount(event.target.value))}
-                slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
+                slotProps={{ htmlInput: { min: 0, step: '0.01' } }}
                 fullWidth
               />
             </Grid>
@@ -252,7 +258,7 @@ export default function ExpensesPage() {
                 type="number"
                 value={filters.maxAmount}
                 onChange={(event) => dispatch(setMaxAmount(event.target.value))}
-                slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
+                slotProps={{ htmlInput: { min: 0, step: '0.01' } }}
                 fullWidth
               />
             </Grid>
@@ -263,7 +269,7 @@ export default function ExpensesPage() {
                   labelId="sort-field-label"
                   label="Sort by"
                   value={filters.sortBy}
-                  onChange={(event) => dispatch(setSortBy(event.target.value as "date" | "amount"))}
+                  onChange={(event) => dispatch(setSortBy(event.target.value as 'date' | 'amount'))}
                 >
                   <MenuItem value="date">Date</MenuItem>
                   <MenuItem value="amount">Amount</MenuItem>
@@ -277,7 +283,7 @@ export default function ExpensesPage() {
                   labelId="sort-order-label"
                   label="Order"
                   value={filters.sortOrder}
-                  onChange={(event) => dispatch(setSortOrder(event.target.value as "asc" | "desc"))}
+                  onChange={(event) => dispatch(setSortOrder(event.target.value as 'asc' | 'desc'))}
                 >
                   <MenuItem value="desc">Descending</MenuItem>
                   <MenuItem value="asc">Ascending</MenuItem>
@@ -301,9 +307,9 @@ export default function ExpensesPage() {
       <Card>
         <CardContent>
           <Stack
-            direction={{ xs: "column", sm: "row" }}
+            direction={{ xs: 'column', sm: 'row' }}
             spacing={1}
-            sx={{ alignItems: { sm: "center" }, justifyContent: "space-between", mb: 2 }}
+            sx={{ alignItems: { sm: 'center' }, justifyContent: 'space-between', mb: 2 }}
           >
             <Typography variant="h6" sx={{ fontWeight: 750 }}>
               All expenses
@@ -314,11 +320,11 @@ export default function ExpensesPage() {
           </Stack>
 
           {loading ? (
-            <Box sx={{ display: "grid", placeItems: "center", py: 6 }}>
+            <Box sx={{ display: 'grid', placeItems: 'center', py: 6 }}>
               <CircularProgress />
             </Box>
           ) : !result?.expenses.length ? (
-            <Box sx={{ py: 6, textAlign: "center" }}>
+            <Box sx={{ py: 6, textAlign: 'center' }}>
               <Typography sx={{ fontWeight: 700 }}>No expenses found</Typography>
               <Typography color="text.secondary" sx={{ mt: 0.5 }}>
                 Change your filters or add your first expense.
@@ -328,7 +334,7 @@ export default function ExpensesPage() {
               </Button>
             </Box>
           ) : (
-            <Box sx={{ overflowX: "auto" }}>
+            <Box sx={{ overflowX: 'auto' }}>
               <Table>
                 <TableHead>
                   <TableRow>
@@ -353,16 +359,22 @@ export default function ExpensesPage() {
                       </TableCell>
                       <TableCell>{expense.category.name}</TableCell>
                       <TableCell>{formatDate(expense.expenseDate)}</TableCell>
-                      <TableCell>{expense.paymentMethod.replaceAll("_", " ")}</TableCell>
+                      <TableCell>{expense.paymentMethod.replaceAll('_', ' ')}</TableCell>
                       <TableCell align="right">{formatCurrency(expense.amount)}</TableCell>
                       <TableCell align="right">
                         <Tooltip title="View details">
-                          <IconButton aria-label={`View ${expense.title}`} onClick={() => setViewTarget(expense)}>
+                          <IconButton
+                            aria-label={`View ${expense.title}`}
+                            onClick={() => setViewTarget(expense)}
+                          >
                             <VisibilityOutlinedIcon />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Edit">
-                          <IconButton aria-label={`Edit ${expense.title}`} onClick={() => openEdit(expense)}>
+                          <IconButton
+                            aria-label={`Edit ${expense.title}`}
+                            onClick={() => openEdit(expense)}
+                          >
                             <EditOutlinedIcon />
                           </IconButton>
                         </Tooltip>
@@ -384,7 +396,7 @@ export default function ExpensesPage() {
           )}
 
           {result && result.pagination.totalPages > 1 && (
-            <Stack sx={{ alignItems: "center", mt: 3 }}>
+            <Stack sx={{ alignItems: 'center', mt: 3 }}>
               <Pagination
                 page={filters.page}
                 count={result.pagination.totalPages}
@@ -408,7 +420,12 @@ export default function ExpensesPage() {
       />
 
       {/* Expense details dialog */}
-      <Dialog open={Boolean(viewTarget)} onClose={() => setViewTarget(null)} fullWidth maxWidth="sm">
+      <Dialog
+        open={Boolean(viewTarget)}
+        onClose={() => setViewTarget(null)}
+        fullWidth
+        maxWidth="sm"
+      >
         <DialogTitle>Expense details</DialogTitle>
         <DialogContent>
           {viewTarget && (
@@ -425,7 +442,7 @@ export default function ExpensesPage() {
                 label="Payment method"
                 value={
                   <Chip
-                    label={viewTarget.paymentMethod.replaceAll("_", " ")}
+                    label={viewTarget.paymentMethod.replaceAll('_', ' ')}
                     size="small"
                     variant="outlined"
                   />
@@ -467,7 +484,7 @@ export default function ExpensesPage() {
             Cancel
           </Button>
           <Button color="error" variant="contained" onClick={handleDelete} disabled={savingDelete}>
-            {savingDelete ? "Deleting…" : "Delete"}
+            {savingDelete ? 'Deleting…' : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -475,16 +492,17 @@ export default function ExpensesPage() {
   );
 }
 
-function DetailRow({
-  label,
-  value,
-}: Readonly<{ label: string; value: React.ReactNode }>) {
+function DetailRow({ label, value }: Readonly<{ label: string; value: React.ReactNode }>) {
   return (
-    <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "space-between" }}>
+    <Stack
+      direction={{ xs: 'column', sm: 'row' }}
+      spacing={1}
+      sx={{ justifyContent: 'space-between' }}
+    >
       <Typography variant="body2" color="text.secondary" sx={{ minWidth: 130 }}>
         {label}
       </Typography>
-      <Typography variant="body2" sx={{ fontWeight: 600, textAlign: { sm: "right" } }}>
+      <Typography variant="body2" sx={{ fontWeight: 600, textAlign: { sm: 'right' } }}>
         {value}
       </Typography>
     </Stack>

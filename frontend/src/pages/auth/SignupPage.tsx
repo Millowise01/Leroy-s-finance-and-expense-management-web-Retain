@@ -1,43 +1,40 @@
-import {
-  Alert,
-  Box,
-  Button,
-  Container,
-  Paper,
-  Stack,
-  TextField,
-  Typography
-} from "@mui/material";
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/authContext";
+import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
+import { useState, type FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/authContext';
+import { getErrorMessage } from '../../utils/getErrorMessage';
 
 export default function SignupPage() {
   const { signup } = useAuth();
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
+    setError('');
+
+    if (name.trim().length < 2) {
+      setError('Full name must contain at least 2 characters.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must contain at least 8 characters.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       await signup(name, email, password);
-      void navigate("/dashboard");
+      void navigate('/dashboard');
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to create account"
-      );
+      setError(getErrorMessage(err, 'Unable to create account'));
     } finally {
       setLoading(false);
     }
@@ -48,24 +45,17 @@ export default function SignupPage() {
       <Paper sx={{ p: 4 }}>
         <Stack spacing={3}>
           <Box>
-            <Typography variant="h4">
-              Create your Retain account
-            </Typography>
+            <Typography variant="h4">Create your Retain account</Typography>
           </Box>
 
           {error && <Alert severity="error">{error}</Alert>}
 
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-          >
+          <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={2}>
               <TextField
                 label="Full name"
                 value={name}
-                onChange={(event) =>
-                  setName(event.target.value)
-                }
+                onChange={(event) => setName(event.target.value)}
                 required
                 fullWidth
               />
@@ -74,9 +64,7 @@ export default function SignupPage() {
                 label="Email"
                 type="email"
                 value={email}
-                onChange={(event) =>
-                  setEmail(event.target.value)
-                }
+                onChange={(event) => setEmail(event.target.value)}
                 required
                 fullWidth
               />
@@ -85,29 +73,20 @@ export default function SignupPage() {
                 label="Password"
                 type="password"
                 value={password}
-                onChange={(event) =>
-                  setPassword(event.target.value)
-                }
+                onChange={(event) => setPassword(event.target.value)}
                 helperText="Use at least 8 characters"
                 required
                 fullWidth
               />
 
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={loading}
-              >
-                {loading
-                  ? "Creating account..."
-                  : "Create Account"}
+              <Button type="submit" variant="contained" disabled={loading}>
+                {loading ? 'Creating account...' : 'Create Account'}
               </Button>
             </Stack>
           </Box>
 
           <Typography>
-            Already registered?{" "}
-            <Link to="/signin">Sign in</Link>
+            Already registered? <Link to="/signin">Sign in</Link>
           </Typography>
         </Stack>
       </Paper>

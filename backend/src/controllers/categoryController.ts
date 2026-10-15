@@ -24,6 +24,10 @@ export async function createCategoryController(req: Request, res: Response): Pro
 
     res.status(201).json({ category });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.issues[0]?.message ?? 'Invalid category data' });
+      return;
+    }
     res.status(400).json({
       message: error instanceof Error ? error.message : 'Unable to create category',
     });
@@ -44,6 +48,10 @@ export async function updateCategoryController(req: Request, res: Response): Pro
 
     res.json({ category });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.issues[0]?.message ?? 'Invalid category data' });
+      return;
+    }
     res.status(400).json({
       message: error instanceof Error ? error.message : 'Unable to update category',
     });

@@ -32,7 +32,7 @@ export async function signupController(req: Request, res: Response): Promise<voi
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ message: error.errors[0]?.message ?? 'Invalid request data' });
+      res.status(400).json({ message: error.issues[0]?.message ?? 'Invalid request data' });
       return;
     }
     res.status(400).json({
@@ -53,7 +53,7 @@ export async function signinController(req: Request, res: Response): Promise<voi
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ message: error.errors[0]?.message ?? 'Invalid request data' });
+      res.status(400).json({ message: error.issues[0]?.message ?? 'Invalid request data' });
       return;
     }
     res.status(401).json({
@@ -63,7 +63,11 @@ export async function signinController(req: Request, res: Response): Promise<voi
 }
 
 export async function signoutController(_req: Request, res: Response): Promise<void> {
-  res.clearCookie('retain_token');
+  res.clearCookie('retain_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
   res.json({
     message: 'Signed out successfully',
   });

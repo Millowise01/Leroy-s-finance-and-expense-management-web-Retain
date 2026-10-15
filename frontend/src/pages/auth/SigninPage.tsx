@@ -1,42 +1,28 @@
-import {
-  Alert,
-  Box,
-  Button,
-  Container,
-  Paper,
-  Stack,
-  TextField,
-  Typography
-} from "@mui/material";
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/authContext";
+import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
+import { useState, type FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/authContext';
+import { getErrorMessage } from '../../utils/getErrorMessage';
 
 export default function SigninPage() {
   const { signin } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
       await signin(email, password);
-      void navigate("/dashboard");
+      void navigate('/dashboard');
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to sign in"
-      );
+      setError(getErrorMessage(err, 'Unable to sign in'));
     } finally {
       setLoading(false);
     }
@@ -47,29 +33,20 @@ export default function SigninPage() {
       <Paper sx={{ p: 4 }}>
         <Stack spacing={3}>
           <Box>
-            <Typography variant="h4">
-              Welcome back
-            </Typography>
+            <Typography variant="h4">Welcome back</Typography>
 
-            <Typography color="text.secondary">
-              Sign in to Retain
-            </Typography>
+            <Typography color="text.secondary">Sign in to Retain</Typography>
           </Box>
 
           {error && <Alert severity="error">{error}</Alert>}
 
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-          >
+          <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={2}>
               <TextField
                 label="Email"
                 type="email"
                 value={email}
-                onChange={(event) =>
-                  setEmail(event.target.value)
-                }
+                onChange={(event) => setEmail(event.target.value)}
                 required
                 fullWidth
               />
@@ -78,26 +55,19 @@ export default function SigninPage() {
                 label="Password"
                 type="password"
                 value={password}
-                onChange={(event) =>
-                  setPassword(event.target.value)
-                }
+                onChange={(event) => setPassword(event.target.value)}
                 required
                 fullWidth
               />
 
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={loading}
-              >
-                {loading ? "Signing in..." : "Sign In"}
+              <Button type="submit" variant="contained" disabled={loading}>
+                {loading ? 'Signing in...' : 'Sign In'}
               </Button>
             </Stack>
           </Box>
 
           <Typography>
-            Don't have an account?{" "}
-            <Link to="/signup">Create one</Link>
+            Don't have an account? <Link to="/signup">Create one</Link>
           </Typography>
         </Stack>
       </Paper>

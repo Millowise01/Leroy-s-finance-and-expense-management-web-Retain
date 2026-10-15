@@ -1,6 +1,6 @@
-import type { User, UserRole } from "./auth";
-import type { Category } from "./category";
-import type { Expense } from "./expense";
+import type { User, UserRole } from './auth';
+import type { Category } from './category';
+import type { Expense } from './expense';
 
 export type AdminCategoryStat = {
   id: string;
@@ -10,10 +10,10 @@ export type AdminCategoryStat = {
 };
 
 export type AdminRecentExpense = Expense & {
-  user: Pick<User, "id" | "name" | "email">;
+  user: Pick<User, 'id' | 'name' | 'email'>;
 };
 
-export type AdminRecentUser = Pick<User, "id" | "name" | "email" | "createdAt"> & {
+export type AdminRecentUser = Pick<User, 'id' | 'name' | 'email' | 'createdAt'> & {
   role: UserRole;
 };
 

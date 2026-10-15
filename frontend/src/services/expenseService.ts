@@ -1,9 +1,5 @@
-import { api } from "./api";
-import type {
-  Expense,
-  ExpenseFilters,
-  PaymentMethod,
-} from "../types/expense";
+import { api } from './api';
+import type { Expense, ExpenseFilters, PaymentMethod } from '../types/expense';
 
 export type ExpenseInput = {
   title: string;
@@ -40,13 +36,13 @@ export async function getExpenses(filters: ExpenseFilters): Promise<ExpensePage>
     sortOrder: filters.sortOrder,
   };
 
-  const response = await api.get<ExpensePage>("/expenses", { params });
+  const response = await api.get<ExpensePage>('/expenses', { params });
 
   return response.data;
 }
 
 export async function createExpense(data: ExpenseInput) {
-  const response = await api.post<{ expense: Expense }>("/expenses", data);
+  const response = await api.post<{ expense: Expense }>('/expenses', data);
   return response.data.expense;
 }
 

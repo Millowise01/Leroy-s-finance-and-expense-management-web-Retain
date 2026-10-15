@@ -1,5 +1,5 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/authContext";
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../context/authContext';
 
 export default function AdminRoute() {
   const { user, loading } = useAuth();
@@ -12,7 +12,7 @@ export default function AdminRoute() {
     return <Navigate to="/signin" replace />;
   }
 
-  if (user.role !== "ADMIN") {
+  if (user.role !== 'ADMIN') {
     return <Navigate to="/dashboard" replace />;
   }
 

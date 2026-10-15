@@ -1,13 +1,13 @@
-import { Navigate, Route, Routes } from "react-router-dom";
-import ProtectedRoute from "./routes/ProtectedRoute";
-import AdminRoute from "./routes/AdminRoute";
-import SigninPage from "./pages/auth/SigninPage";
-import SignupPage from "./pages/auth/SignupPage";
-import DashboardPage from "./pages/dashboard/DashboardPage";
-import ExpensesPage from "./pages/expenses/ExpensesPage";
-import BudgetPage from "./pages/budget/BudgetPage";
-import AdminPage from "./pages/admin/AdminPage";
-import AppLayout from "./components/Layout/AppLayout";
+import { Navigate, Route, Routes } from 'react-router-dom';
+import ProtectedRoute from './routes/ProtectedRoute';
+import AdminRoute from './routes/AdminRoute';
+import SigninPage from './pages/auth/SigninPage';
+import SignupPage from './pages/auth/SignupPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
+import ExpensesPage from './pages/expenses/ExpensesPage';
+import BudgetPage from './pages/budget/BudgetPage';
+import AdminPage from './pages/admin/AdminPage';
+import AppLayout from './components/Layout/AppLayout';
 
 export default function App() {
   return (

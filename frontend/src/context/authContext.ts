@@ -6,16 +6,16 @@ import {
   useMemo,
   useState,
   type ReactNode,
-} from "react";
-import type { User } from "../types/auth";
+} from 'react';
+import type { User } from '../types/auth';
 import {
   getCurrentUser,
   signin as signinRequest,
   signout as signoutRequest,
   signup as signupRequest,
-} from "../services/authService";
+} from '../services/authService';
 
-export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
+export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
 export type AuthContextValue = {
   user: User | null;
@@ -55,24 +55,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
-  const value = useMemo<AuthContextValue>(
-    () => {
-      let status: AuthStatus = "unauthenticated";
-      if (loading) status = "loading";
-      else if (user) status = "authenticated";
+  const value = useMemo<AuthContextValue>(() => {
+    let status: AuthStatus = 'unauthenticated';
+    if (loading) status = 'loading';
+    else if (user) status = 'authenticated';
 
-      return {
-        user,
-        loading,
-        status,
+    return {
+      user,
+      loading,
+      status,
       isAuthenticated: Boolean(user),
       signin,
       signup,
       signout,
-      };
-    },
-    [user, loading],
-  );
+    };
+  }, [user, loading]);
 
   return createElement(AuthContext.Provider, { value }, children);
 }
@@ -81,7 +78,7 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error("useAuth must be used inside AuthProvider");
+    throw new Error('useAuth must be used inside AuthProvider');
   }
 
   return context;

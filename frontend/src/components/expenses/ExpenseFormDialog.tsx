@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from 'react';
 import {
   Alert,
   Button,
@@ -9,18 +9,18 @@ import {
   MenuItem,
   Stack,
   TextField,
-} from "@mui/material";
-import type { Category } from "../../types/category";
-import type { Expense, PaymentMethod } from "../../types/expense";
-import type { ExpenseInput } from "../../services/expenseService";
+} from '@mui/material';
+import type { Category } from '../../types/category';
+import type { Expense, PaymentMethod } from '../../types/expense';
+import type { ExpenseInput } from '../../services/expenseService';
 
 const paymentMethods: { value: PaymentMethod; label: string }[] = [
-  { value: "CASH", label: "Cash" },
-  { value: "MOBILE_MONEY", label: "Mobile money" },
-  { value: "DEBIT_CARD", label: "Debit card" },
-  { value: "CREDIT_CARD", label: "Credit card" },
-  { value: "BANK_TRANSFER", label: "Bank transfer" },
-  { value: "OTHER", label: "Other" },
+  { value: 'CASH', label: 'Cash' },
+  { value: 'MOBILE_MONEY', label: 'Mobile money' },
+  { value: 'DEBIT_CARD', label: 'Debit card' },
+  { value: 'CREDIT_CARD', label: 'Credit card' },
+  { value: 'BANK_TRANSFER', label: 'Bank transfer' },
+  { value: 'OTHER', label: 'Other' },
 ];
 
 type Props = Readonly<{
@@ -32,44 +32,44 @@ type Props = Readonly<{
 }>;
 
 export default function ExpenseFormDialog({ open, categories, expense, onClose, onSave }: Props) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
   const [expenseDate, setExpenseDate] = useState(new Date().toISOString().slice(0, 10));
-  const [notes, setNotes] = useState("");
-  const [error, setError] = useState("");
+  const [notes, setNotes] = useState('');
+  const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!open) return;
 
-    setTitle(expense?.title ?? "");
-    setDescription(expense?.description ?? "");
-    setAmount(expense ? String(expense.amount) : "");
-    setCategoryId(expense?.categoryId ?? categories[0]?.id ?? "");
-    setPaymentMethod(expense?.paymentMethod ?? "CASH");
+    setTitle(expense?.title ?? '');
+    setDescription(expense?.description ?? '');
+    setAmount(expense ? String(expense.amount) : '');
+    setCategoryId(expense?.categoryId ?? categories[0]?.id ?? '');
+    setPaymentMethod(expense?.paymentMethod ?? 'CASH');
     setExpenseDate(
       expense
         ? new Date(expense.expenseDate).toISOString().slice(0, 10)
         : new Date().toISOString().slice(0, 10),
     );
-    setNotes(expense?.notes ?? "");
-    setError("");
+    setNotes(expense?.notes ?? '');
+    setError('');
   }, [open, expense, categories]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
+    setError('');
 
     const numericAmount = Number(amount);
-    if (!title.trim()) return setError("Enter an expense title.");
+    if (!title.trim()) return setError('Enter an expense title.');
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-      return setError("Amount must be greater than zero.");
+      return setError('Amount must be greater than zero.');
     }
-    if (!categoryId) return setError("Choose a category.");
-    if (!expenseDate) return setError("Choose an expense date.");
+    if (!categoryId) return setError('Choose a category.');
+    if (!expenseDate) return setError('Choose an expense date.');
 
     setSaving(true);
     try {
@@ -84,7 +84,7 @@ export default function ExpenseFormDialog({ open, categories, expense, onClose, 
       });
       onClose();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Unable to save this expense.");
+      setError(reason instanceof Error ? reason.message : 'Unable to save this expense.');
     } finally {
       setSaving(false);
     }
@@ -92,7 +92,7 @@ export default function ExpenseFormDialog({ open, categories, expense, onClose, 
 
   return (
     <Dialog open={open} onClose={saving ? undefined : onClose} fullWidth maxWidth="sm">
-      <DialogTitle>{expense ? "Edit expense" : "Add an expense"}</DialogTitle>
+      <DialogTitle>{expense ? 'Edit expense' : 'Add an expense'}</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
@@ -119,7 +119,7 @@ export default function ExpenseFormDialog({ open, categories, expense, onClose, 
               onChange={(event) => setAmount(event.target.value)}
               required
               type="number"
-              slotProps={{ htmlInput: { min: "0.01", step: "0.01" } }}
+              slotProps={{ htmlInput: { min: '0.01', step: '0.01' } }}
               fullWidth
             />
             <TextField
@@ -173,7 +173,7 @@ export default function ExpenseFormDialog({ open, categories, expense, onClose, 
             Cancel
           </Button>
           <Button type="submit" variant="contained" disabled={saving || categories.length === 0}>
-            {saving ? "Saving…" : "Save expense"}
+            {saving ? 'Saving…' : 'Save expense'}
           </Button>
         </DialogActions>
       </form>

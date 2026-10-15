@@ -1,9 +1,9 @@
 # Retain — Personal Expense & Budget Manager
 
 Retain is a full-stack web application for recording personal expenses, tracking
-monthly budgets, and gaining clear spending insights. It is built with React,
-TypeScript, and Vite on the frontend and Node.js, Express, and TypeScript on the
-backend, backed by a PostgreSQL database managed through Prisma.
+monthly budgets, and gaining clear spending insights. It is built with React 19,
+TypeScript, and Vite on the frontend and Node.js, Express 5, and TypeScript on
+the backend, backed by a PostgreSQL database managed through Prisma 7.
 
 ## Live application
 
@@ -57,6 +57,9 @@ backend, backed by a PostgreSQL database managed through Prisma.
 
 - **Category management** — Create, update, and delete expense categories.
   Deletion is blocked when expenses are still assigned to the category.
+- **Admin user creation** — Administrators can create new user accounts with any
+  role via `POST /api/admin/users`. The public signup endpoint always creates
+  `USER` role accounts only.
 - **Platform insights** — Total registered users, total expenses recorded, total
   expense value, expenses recorded this month (by transaction date), spending per
   category, top 5 most-used categories, bottom 5 least-used categories, 10 most
@@ -122,7 +125,7 @@ The repository uses **npm workspaces** so all commands can be run from the root.
 
 ## Getting started
 
-```bash
+```powershell
 # 1. Clone the repository
 git clone <repository-url>
 cd retain
@@ -131,9 +134,7 @@ cd retain
 npm install
 
 # 3. Create the backend environment file
-Copy-Item backend/.env.example backend/.env   # PowerShell
-# or
-cp backend/.env.example backend/.env          # bash / macOS / Linux
+Copy-Item backend/.env.example backend/.env
 
 # 4. Edit backend/.env — set DATABASE_URL and JWT_SECRET (see Environment variables)
 
@@ -149,7 +150,7 @@ cp backend/.env.example backend/.env          # bash / macOS / Linux
 | Variable | Required | Description |
 |---|---|---|
 | `DATABASE_URL` | ✅ | PostgreSQL connection string (see format below) |
-| `JWT_SECRET` | ✅ | Long random string used to sign JWTs (min 32 chars) |
+| `JWT_SECRET` | ✅ | Random string used to sign JWTs — minimum 32 characters |
 | `NODE_ENV` | — | `development` or `production` (defaults to `development`) |
 | `PORT` | — | Port the API listens on (default `4000`) |
 | `FRONTEND_URL` | — | CORS origin for the frontend (default `http://localhost:5173`) |
@@ -165,7 +166,7 @@ Example for a local PostgreSQL installation where the superuser is `postgres`
 and the database is named `retain`:
 
 ```
-DATABASE_URL=postgresql://postgres:YourActualPassword@localhost:5432/retain
+DATABASE_URL=postgresql://postgres:YourPassword@localhost:5432/retain
 ```
 
 > The password is the one you set when you installed PostgreSQL. If you need to
@@ -204,16 +205,14 @@ npm run db:migrate --workspace backend -- --name init
 ```
 
 Use `db:migrate` for local development. Use `db:deploy` when applying an
-already-reviewed migration history to a production database. Do not run either
-command until `DATABASE_URL` points to the intended database.
+already-reviewed migration history to a production database.
 
 ### Seeding demo data (optional)
 
 The seeder creates 1 admin, 15 demo users, 12 categories, and sample expenses.
-It uses deterministic upserts and never deletes existing records. Run it only
-against a local development database.
+It uses deterministic upserts and never deletes existing records.
 
-Set `SEED_DEMO_DATA=true` in `backend/.env`, run the seed, then revert the value:
+Set `SEED_DEMO_DATA=true` in `backend/.env`, run the seed, then revert:
 
 ```powershell
 # In backend/.env temporarily set: SEED_DEMO_DATA=true
@@ -225,28 +224,30 @@ npm run db:seed --workspace backend
 
 ## Running the application
 
-Open two separate PowerShell terminals and run one command in each:
+Open two separate PowerShell terminals:
 
 **Terminal 1 — backend:**
+
 ```powershell
 npm run dev:backend
 ```
+
 The API starts at `http://localhost:4000`.
 Health check: `GET http://localhost:4000/api/health`
 
 **Terminal 2 — frontend:**
+
 ```powershell
 npm run dev:frontend
 ```
-The app opens at `http://localhost:5173`.
 
-> Both must be running at the same time for the application to work.
+The app opens at `http://localhost:5173`.
 
 ---
 
 ## Repository checks
 
-```bash
+```powershell
 npm run build        # Type-check and build both packages
 npm run typecheck    # TypeScript type-check only
 npm run lint         # ESLint across both packages
@@ -269,15 +270,11 @@ All endpoints are prefixed with `/api`. Authenticated endpoints require a valid
 | `POST` | `/signout` | — | Clears the auth cookie. |
 | `GET` | `/me` | ✅ | Returns the currently authenticated user. |
 
-**Signup rules:**
+**Signup validation:**
 - `name` — 2–100 characters
-- `email` — valid email address, must be unique
+- `email` — valid email, must be unique
 - `password` — 8–100 characters
-
-**Roles:** Public signup always creates a `USER` role account. `ADMIN` accounts
-are created only through the seed script or a direct database operation by an
-existing administrator. The signup endpoint ignores any `role` field in the
-request body.
+- `role` field in the request body is **ignored** — public signup always creates `USER`
 
 ### Expenses — `/api/expenses`
 
@@ -302,8 +299,10 @@ request body.
 | `maxAmount` | number | Maximum expense amount |
 | `sortBy` | `date` \| `amount` | Sort field (default `date`) |
 | `sortOrder` | `asc` \| `desc` | Sort direction (default `desc`) |
-| `page` | number | Page number (default `1`) |
+| `page` | number | Page number, 1-based (default `1`) |
 | `limit` | number | Results per page, max 100 (default `10`) |
+
+Invalid parameters return HTTP 400 with a descriptive message.
 
 **Expense body fields:**
 
@@ -311,7 +310,7 @@ request body.
 {
   "title": "string (2–100 chars, cannot be only whitespace)",
   "description": "string (optional, max 500)",
-  "amount": "string decimal, e.g. \"12.50\"",
+  "amount": "string decimal > 0, e.g. \"12.50\"",
   "categoryId": "string",
   "paymentMethod": "CASH | MOBILE_MONEY | DEBIT_CARD | CREDIT_CARD | BANK_TRANSFER | OTHER",
   "expenseDate": "ISO 8601 date string",
@@ -325,6 +324,9 @@ request body.
 |---|---|---|---|
 | `GET` | `/:year/:month` | ✅ | Get the budget and spending summary for a given month. |
 | `POST` | `/` | ✅ | Create or update the budget for a month. Body: `{ amount, month, year }` |
+
+Budget response includes: `budget`, `spent`, `remaining`, `percentage`, `status`
+(`WITHIN` / `APPROACHING` / `OVER`).
 
 ### Categories — `/api/categories`
 
@@ -346,6 +348,7 @@ request body.
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | `GET` | `/insights` | ✅ Admin | Platform-wide statistics. |
+| `POST` | `/users` | ✅ Admin | Create a user with any role. Body: `{ name, email, password, role? }` |
 
 ### Health
 
@@ -362,56 +365,64 @@ Authentication is implemented with **React Context** (`AuthContext` /
 `isAuthenticated`, `signin`, `signup`, and `signout`. On mount it calls
 `GET /api/auth/me` to restore the session from the existing cookie.
 
-Route protection is handled by two components:
+Route protection:
 
 - `ProtectedRoute` — redirects unauthenticated users to `/signin`.
 - `AdminRoute` — redirects non-admin users to `/dashboard`.
 
-On the backend, the `requireAuth` middleware validates the JWT from the
-`retain_token` cookie and attaches `req.user`. The `requireAdmin` middleware
-checks `req.user.role === 'ADMIN'` and returns `403` otherwise.
+On the backend, `requireAuth` validates the JWT from the `retain_token` cookie
+and attaches `req.user`. `requireAdmin` checks `req.user.role === 'ADMIN'` and
+returns `403` otherwise.
 
 ---
 
 ## State management
 
 All expense **filtering, searching, sorting, and pagination** state is managed
-with **Redux Toolkit** via `expenseFilterSlice`. The slice is mounted at
-`state.expenseFilters` in the Redux store and exposes actions:
+with **Redux Toolkit** via `expenseFilterSlice` at `state.expenseFilters`.
 
-`setSearch` · `setCategoryId` · `setPaymentMethod` · `setStartDate` ·
+Actions: `setSearch` · `setCategoryId` · `setPaymentMethod` · `setStartDate` ·
 `setEndDate` · `setMinAmount` · `setMaxAmount` · `setSortBy` · `setSortOrder` ·
 `setPage` · `resetFilters`
 
-Resetting any filter also resets the page to `1` to avoid empty result pages.
+Changing any filter resets the page to `1`.
 
 ---
 
 ## Admin account
 
-The public signup form always creates a regular `USER` account. Administrator
-accounts are created through the seed script, which is the approved bootstrap
-procedure for this project.
+The public signup form always creates a `USER` account. Admin accounts are
+created through the seed script or via `POST /api/admin/users` by an existing
+admin.
 
-**To create the admin account locally:**
+**To create the admin account locally (seed method):**
 
 1. Ensure `backend/.env` has the correct `DATABASE_URL`.
 2. Temporarily set `SEED_DEMO_DATA=true` in `backend/.env`.
 3. Run: `npm run db:seed --workspace backend`
 4. Revert `SEED_DEMO_DATA=false`.
 
-The seed creates `admin@retain.local` with password `Admin@12345`.
+The seed creates `admin@retain.local` / `Admin@12345`.
 
-**Security:** The `/api/auth/signup` endpoint ignores any `role` field in the
-request body. It is not possible to self-assign the `ADMIN` role through the
-public registration form.
+**To create an admin via the API (requires an existing admin session):**
+
+```
+POST http://localhost:4000/api/admin/users
+Content-Type: application/json
+
+{
+  "name": "New Admin",
+  "email": "newadmin@example.com",
+  "password": "SecurePass1",
+  "role": "ADMIN"
+}
+```
 
 ---
 
 ## Demo credentials
 
-These credentials are created by the seed script and are for **local development
-only**. Do not use them in production.
+For **local development only**.
 
 | Role | Email | Password |
 |---|---|---|
@@ -424,8 +435,7 @@ Demo users are numbered `demo.user01` through `demo.user15`.
 
 ## Testing with Postman
 
-The API uses `httpOnly` cookies for authentication. Postman handles these
-automatically once you sign in.
+The API uses `httpOnly` cookies. Postman handles these automatically.
 
 ### Step 1 — confirm the backend is running
 
@@ -433,22 +443,18 @@ automatically once you sign in.
 GET http://localhost:4000/api/health
 ```
 
-Expected response: `{ "status": "ok", "application": "Retain" }`
+Expected: `{ "status": "ok", "application": "Retain" }`
 
-### Step 2 — sign in as admin
+### Step 2 — sign in
 
 ```
 POST http://localhost:4000/api/auth/signin
 Content-Type: application/json
 
-{
-  "email": "admin@retain.local",
-  "password": "Admin@12345"
-}
+{ "email": "admin@retain.local", "password": "Admin@12345" }
 ```
 
-Postman stores the `retain_token` cookie automatically. All subsequent requests
-in the same Postman session will include it.
+Postman stores the `retain_token` cookie automatically.
 
 ### Step 3 — verify authentication
 
@@ -456,14 +462,14 @@ in the same Postman session will include it.
 GET http://localhost:4000/api/auth/me
 ```
 
-Expected: the admin user object.
-
-### Step 4 — test protected endpoints
+### Step 4 — test endpoints
 
 ```
-GET http://localhost:4000/api/expenses
-GET http://localhost:4000/api/dashboard?month=1&year=2026
-GET http://localhost:4000/api/admin/insights
+GET  http://localhost:4000/api/expenses
+GET  http://localhost:4000/api/expenses?search=food&sortBy=amount&sortOrder=desc&page=1
+GET  http://localhost:4000/api/dashboard?month=10&year=2026
+GET  http://localhost:4000/api/budgets/2026/10
+GET  http://localhost:4000/api/admin/insights
 ```
 
 ### Step 5 — sign out
@@ -478,11 +484,7 @@ POST http://localhost:4000/api/auth/signout
 POST http://localhost:4000/api/auth/signup
 Content-Type: application/json
 
-{
-  "name": "Jane Smith",
-  "email": "jane@example.com",
-  "password": "SecurePass1"
-}
+{ "name": "Jane Smith", "email": "jane@example.com", "password": "SecurePass1" }
 ```
 
 Expected: HTTP 201 with the new user object and a `retain_token` cookie.
@@ -493,8 +495,8 @@ Expected: HTTP 201 with the new user object and a `retain_token` cookie.
 
 1. Open **pgAdmin 4**.
 2. Right-click **Servers → Register → Server**.
-3. On the **General** tab set Name: `Local Retain`.
-4. On the **Connection** tab:
+3. **General** tab — Name: `Local Retain`.
+4. **Connection** tab:
    - Host: `localhost`
    - Port: `5432`
    - Maintenance database: `postgres`
@@ -503,9 +505,9 @@ Expected: HTTP 201 with the new user object and a `retain_token` cookie.
 5. Click **Save**.
 6. Expand **Servers → Local Retain → Databases → retain → Schemas → public → Tables**.
 
-You will see: `Budget`, `Category`, `Expense`, `User`, and `_prisma_migrations`.
+Tables: `Budget`, `Category`, `Expense`, `User`, `_prisma_migrations`.
 
-To view users (passwords are stored as bcrypt hashes — never in plain text):
+To view users (passwords are bcrypt hashes — never plain text):
 
 ```sql
 SELECT id, name, email, role, "createdAt" FROM "User" ORDER BY "createdAt" DESC;

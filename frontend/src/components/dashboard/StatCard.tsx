@@ -1,21 +1,25 @@
-import { Card, CardContent, Stack, Typography } from "@mui/material";
-import type { ReactNode } from "react";
+import { Card, CardContent, Stack, Typography } from '@mui/material';
+import type { ReactNode } from 'react';
 
 export default function StatCard({
   label,
   value,
   helper,
   icon,
-  }: Readonly<{
+}: Readonly<{
   label: string;
   value: string;
   helper?: string;
   icon: ReactNode;
-  }>) {
+}>) {
   return (
-    <Card sx={{ height: "100%" }}>
+    <Card sx={{ height: '100%' }}>
       <CardContent>
-        <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start", justifyContent: "space-between" }}>
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}
+        >
           <Stack spacing={1}>
             <Typography variant="body2" color="text.secondary">
               {label}
@@ -33,11 +37,11 @@ export default function StatCard({
             sx={{
               width: 44,
               height: 44,
-              alignItems: "center",
-              justifyContent: "center",
+              alignItems: 'center',
+              justifyContent: 'center',
               borderRadius: 2,
-              bgcolor: "primary.light",
-              color: "primary.main",
+              bgcolor: 'primary.light',
+              color: 'primary.main',
             }}
           >
             {icon}

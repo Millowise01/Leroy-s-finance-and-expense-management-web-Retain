@@ -1,12 +1,7 @@
-import type { Category } from "./category";
+import type { Category } from './category';
 
 export type PaymentMethod =
-  | "CASH"
-  | "MOBILE_MONEY"
-  | "DEBIT_CARD"
-  | "CREDIT_CARD"
-  | "BANK_TRANSFER"
-  | "OTHER";
+  'CASH' | 'MOBILE_MONEY' | 'DEBIT_CARD' | 'CREDIT_CARD' | 'BANK_TRANSFER' | 'OTHER';
 
 export type Expense = {
   id: string;
@@ -30,8 +25,8 @@ export type ExpenseFilters = {
   endDate: string;
   minAmount: string;
   maxAmount: string;
-  sortBy: "date" | "amount";
-  sortOrder: "asc" | "desc";
+  sortBy: 'date' | 'amount';
+  sortOrder: 'asc' | 'desc';
   page: number;
   limit: number;
 };
