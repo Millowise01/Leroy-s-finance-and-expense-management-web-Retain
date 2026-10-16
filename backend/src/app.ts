@@ -29,6 +29,31 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+app.get('/api/setup-admin', async (req, res) => {
+  if (req.query.token !== process.env.SETUP_TOKEN) {
+    res.status(403).json({ message: 'Forbidden' });
+    return;
+  }
+  try {
+    const { prisma } = await import('./config/prisma.js');
+    const { hashPassword } = await import('./utils/password.js');
+    const user = await prisma.user.upsert({
+      where: { email: 'admin@retain.local' },
+      update: { role: 'ADMIN', password: await hashPassword('Admin@12345') },
+      create: {
+        name: 'Retain Administrator',
+        email: 'admin@retain.local',
+        password: await hashPassword('Admin@12345'),
+        role: 'ADMIN',
+      },
+      select: { email: true, role: true },
+    });
+    res.json({ message: 'Admin created', user });
+  } catch (error) {
+    res.status(500).json({ message: String(error) });
+  }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/expenses', expenseRoutes);
