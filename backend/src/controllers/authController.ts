@@ -13,10 +13,12 @@ const signinSchema = z.object({
   password: z.string().min(1),
 });
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
+  secure: isProd,
+  sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
@@ -65,8 +67,8 @@ export async function signinController(req: Request, res: Response): Promise<voi
 export async function signoutController(_req: Request, res: Response): Promise<void> {
   res.clearCookie('retain_token', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
   });
   res.json({
     message: 'Signed out successfully',
