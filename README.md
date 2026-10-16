@@ -7,7 +7,10 @@ the backend, backed by a PostgreSQL database managed through Prisma 7.
 
 ## Live application
 
-> **Deployed URL:** _Add your deployment URL here once the application is live._
+> **Deployed URL:** https://retain-frontend.onrender.com
+>
+> **API base URL:** https://retain-backend-xglb.onrender.com/api
+> **Health check:** https://retain-backend-xglb.onrender.com/api/health
 
 ---
 
@@ -437,10 +440,13 @@ Demo users are numbered `demo.user01` through `demo.user15`.
 
 The API uses `httpOnly` cookies. Postman handles these automatically.
 
+Use the production base URL `https://retain-backend-xglb.onrender.com` or
+`http://localhost:4000` for local development.
+
 ### Step 1 — confirm the backend is running
 
 ```
-GET http://localhost:4000/api/health
+GET https://retain-backend-xglb.onrender.com/api/health
 ```
 
 Expected: `{ "status": "ok", "application": "Retain" }`
@@ -448,7 +454,7 @@ Expected: `{ "status": "ok", "application": "Retain" }`
 ### Step 2 — sign in
 
 ```
-POST http://localhost:4000/api/auth/signin
+POST https://retain-backend-xglb.onrender.com/api/auth/signin
 Content-Type: application/json
 
 { "email": "admin@retain.local", "password": "Admin@12345" }
@@ -459,29 +465,29 @@ Postman stores the `retain_token` cookie automatically.
 ### Step 3 — verify authentication
 
 ```
-GET http://localhost:4000/api/auth/me
+GET https://retain-backend-xglb.onrender.com/api/auth/me
 ```
 
 ### Step 4 — test endpoints
 
 ```
-GET  http://localhost:4000/api/expenses
-GET  http://localhost:4000/api/expenses?search=food&sortBy=amount&sortOrder=desc&page=1
-GET  http://localhost:4000/api/dashboard?month=10&year=2026
-GET  http://localhost:4000/api/budgets/2026/10
-GET  http://localhost:4000/api/admin/insights
+GET  https://retain-backend-xglb.onrender.com/api/expenses
+GET  https://retain-backend-xglb.onrender.com/api/expenses?search=food&sortBy=amount&sortOrder=desc&page=1
+GET  https://retain-backend-xglb.onrender.com/api/dashboard?month=10&year=2026
+GET  https://retain-backend-xglb.onrender.com/api/budgets/2026/10
+GET  https://retain-backend-xglb.onrender.com/api/admin/insights
 ```
 
 ### Step 5 — sign out
 
 ```
-POST http://localhost:4000/api/auth/signout
+POST https://retain-backend-xglb.onrender.com/api/auth/signout
 ```
 
 ### Step 6 — register a new regular user
 
 ```
-POST http://localhost:4000/api/auth/signup
+POST https://retain-backend-xglb.onrender.com/api/auth/signup
 Content-Type: application/json
 
 { "name": "Jane Smith", "email": "jane@example.com", "password": "SecurePass1" }
