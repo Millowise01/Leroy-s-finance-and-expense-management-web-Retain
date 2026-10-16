@@ -85,7 +85,7 @@ export async function listExpenses(filters: ExpenseFilters) {
   ]);
 
   return {
-    expenses: expenses.map((expense) => ({
+    expenses: expenses.map((expense: (typeof expenses)[number]) => ({
       ...expense,
       amount: Number(expense.amount),
     })),

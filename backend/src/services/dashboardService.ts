@@ -31,10 +31,10 @@ export async function getDashboard(userId: string, month: number, year: number) 
     }),
   ]);
 
-  const totalSpent = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+  const totalSpent = expenses.reduce((sum: number, expense: (typeof expenses)[number]) => sum + Number(expense.amount), 0);
 
   const highestExpense = expenses.reduce(
-    (highest, expense) =>
+    (highest: (typeof expenses)[number] | null, expense: (typeof expenses)[number]) =>
       !highest || Number(expense.amount) > Number(highest.amount) ? expense : highest,
     null as (typeof expenses)[number] | null,
   );
@@ -85,7 +85,7 @@ export async function getDashboard(userId: string, month: number, year: number) 
         }
       : null,
     spendingByCategory,
-    recentExpenses: expenses.slice(0, 5).map((expense) => ({
+    recentExpenses: expenses.slice(0, 5).map((expense: (typeof expenses)[number]) => ({
       ...expense,
       amount: Number(expense.amount),
     })),

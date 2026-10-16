@@ -81,13 +81,16 @@ export async function getAdminInsights() {
   ]);
 
   const normalizedCategories = categorySpending
-    .map((category) => ({
+    .map((category: (typeof categorySpending)[number]) => ({
       id: category.id,
       name: category.name,
       expenseCount: category._count.expenses,
-      totalSpent: category.expenses.reduce((sum, expense) => sum + Number(expense.amount), 0),
+      totalSpent: category.expenses.reduce(
+        (sum: number, expense: { amount: unknown }) => sum + Number(expense.amount),
+        0,
+      ),
     }))
-    .sort((a, b) => b.expenseCount - a.expenseCount);
+    .sort((a: { expenseCount: number }, b: { expenseCount: number }) => b.expenseCount - a.expenseCount);
 
   return {
     totalUsers,
@@ -97,9 +100,9 @@ export async function getAdminInsights() {
     spendingPerCategory: normalizedCategories,
     topCategories: normalizedCategories.slice(0, 5),
     bottomCategories: [...normalizedCategories]
-      .sort((a, b) => a.expenseCount - b.expenseCount)
+      .sort((a: { expenseCount: number }, b: { expenseCount: number }) => a.expenseCount - b.expenseCount)
       .slice(0, 5),
-    recentExpenses: recentExpenses.map((expense) => ({
+    recentExpenses: recentExpenses.map((expense: (typeof recentExpenses)[number]) => ({
       ...expense,
       amount: Number(expense.amount),
     })),
