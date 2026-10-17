@@ -7,10 +7,10 @@ the backend, backed by a PostgreSQL database managed through Prisma 7.
 
 ## Live application
 
-> **Deployed URL:** https://retain-frontend.onrender.com
+> **Deployed URL:** <https://retain-frontend.onrender.com>
 >
-> **API base URL:** https://retain-backend-xglb.onrender.com/api
-> **Health check:** https://retain-backend-xglb.onrender.com/api/health
+> **API base URL:** <https://retain-backend-xglb.onrender.com/api>
+> **Health check:** <https://retain-backend-xglb.onrender.com/api/health>
 
 ---
 
@@ -73,7 +73,7 @@ the backend, backed by a PostgreSQL database managed through Prisma 7.
 ## Tech stack
 
 | Layer | Technology |
-|---|---|
+| --- | --- |
 | Frontend | React 19, TypeScript, Vite, Material UI 9 |
 | State — auth | React Context API |
 | State — filters | Redux Toolkit |
@@ -88,7 +88,7 @@ the backend, backed by a PostgreSQL database managed through Prisma 7.
 
 ## Repository layout
 
-```
+```text
 retain/
 ├── frontend/          React + TypeScript + Vite application
 │   └── src/
@@ -189,7 +189,7 @@ Copy `frontend/.env.example` to `frontend/.env` if you need to override the API
 base URL:
 
 | Variable | Description |
-|---|---|
+| --- | --- |
 | `VITE_API_URL` | Backend API base URL (default `http://localhost:4000/api`) |
 
 ---
